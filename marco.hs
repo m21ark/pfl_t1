@@ -58,9 +58,9 @@ deriveMono m dx = (((monoCoef m) * exp, exponents), (monoVar m))
         aux = zip (monoVar m) (monoExp m) -- (var, exp)
         aux2 =  (zip [0..] aux) -- (index, (var, exp))
         auxElem = foldr auxFunc (-1, (' ',-1)) aux2
-        (index, exp) = (fst auxElem, snd (snd auxElem))
-        exponents = replaceAtIndex index (exp - 1) (monoExp m)
-        auxFunc e acc = if (fst (snd e)) == dx then e else acc
+        (index, exp) = (fst auxElem, snd (snd auxElem)) -- index e expoente atual da derivada em questao
+        exponents = replaceAtIndex index (exp - 1) (monoExp m) -- reduz expoente da derivada em questao
+        auxFunc e acc = if (fst (snd e)) == dx then e else acc -- procura o elemento com as infos uteis
 
 
 main = print $ derivePoli [((4,[5,4]),"zy"), ((4,[5,3]),"xy") ,((4,[3,4]),"yz")] 'z'
