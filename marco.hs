@@ -8,14 +8,19 @@
 		        e) parsing string <-> polinomios
 -}
 
-import Data.List
--- replace item at pos N with nem ITEM in list LS
+import Data.List -- to use splitAt
+import Data.Char -- to use ord
 
+-- replace item at pos N with nem ITEM in list LS
 replaceAtIndex :: Int -> a -> [a] -> [a]
 replaceAtIndex n item ls
     | length ls <= n = error "Out of bounds replaceAtIndex"
     | otherwise = a ++ (item:b) where (a, (_:b)) = splitAt n ls
 
+
+-- Basicamente transforma lista num set sorted e volta a lista --> talvez podiamos usar Data.Set se n fizer mal
+rmvdups :: (Ord a) => [a] -> [a]
+rmvdups = map head . group . sort
 
 -- ======================================================FUNCOES BASICAS AUX===============================================================
 
@@ -81,11 +86,18 @@ sumMono m1 m2
 
 -- ======================================================MULTIPLY POLIS============================================================
 
+-- Falta agora aplicar a distributiva a cada par de monomios...
 
+-- (5 x^2 y^3)  *  (7 y^2 z^5) = 35 x^2 y^5 z^5
 multMono :: Monomio -> Monomio -> Monomio
-multMono m1 m2 = m1
-
-
+multMono m1 m2 =  ((coef, exp), vars)
+    where
+        coef = (monoCoef m1) * (monoCoef m2)
+        vars = rmvdups $ (monoVar m1) ++ (monoVar m2)
+        exp = [(findVarExp c m1) + (findVarExp c m2) | c <- vars ] -- ((5,[2,3]),"xy") ((7,[2,5]),"yz") 
+        findVarExp c m = sum [e | (v,e) <- aux , v == c] 
+            where aux = zip (monoVar m) (monoExp m)
+            
 -- ======================================================DERIVE POLINOMIALS============================================================
 
 -- Derivar polinomio dado em ordem a char dado
@@ -103,9 +115,9 @@ deriveMono m dx = (((monoCoef m) * exp, exponents), (monoVar m))
         aux = zip (monoVar m) (monoExp m) -- (var, exp)
         aux2 =  (zip [0..] aux) -- (index, (var, exp))
         auxElem = foldr auxFunc (-1, (' ',-1)) aux2
+        auxFunc e acc = if (fst (snd e)) == dx then e else acc -- procura o elemento com as infos uteis
         (index, exp) = (fst auxElem, snd (snd auxElem)) -- index e expoente atual da derivada em questao
         exponents = replaceAtIndex index (exp - 1) (monoExp m) -- reduz expoente da derivada em questao
-        auxFunc e acc = if (fst (snd e)) == dx then e else acc -- procura o elemento com as infos uteis
 
 
 -- ====================================================================================================================================
@@ -115,7 +127,7 @@ main :: IO ()
 main = do
     putStrLn $ poliParseToStr [((2,[3,4]),"ax") , ((5,[3,4]),"xy") ]
     putStrLn $ monoParseToStr $ sumMono ((2,[3,4]),"ax") ((5,[3,4]),"ax") 
-    putStrLn $ monoParseToStr $ multMono ((2,[3,4]),"ax") ((5,[3,4]),"xy") 
+    putStrLn $ monoParseToStr $ multMono ((5,[2,3]),"xy") ((7,[2,5]),"yz") 
 
 
 
