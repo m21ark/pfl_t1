@@ -109,8 +109,13 @@ sumMono m1 m2
 sumPoli_ :: Polinomio -> Polinomio 
 sumPoli_ [] = []
 sumPoli_  (m1:[]) = [m1]
-sumPoli_  (m1:ps) = if sumMonoCompatible m1 m2 then (sumMono m1 m2) : sumPoli_ (tail ps) else  m1 : sumPoli_ ps
-    where m2 = head ps
+sumPoli_  (m1:ps)
+    | sumMonoCompatible m1 m2 = sumPoli_ ( res : tail ps) 
+    | otherwise = m1 : sumPoli_ ps
+    where 
+        m2 = head ps
+        res = (sumMono m1 m2)
+    
 
 -- 2x^3 + 3x^3 + 4x^2 + 8x + 5x + 17 + 2 = 5x^3 + 4x^2 + 13x+ 19 
 -- [((2,[3]),"x"),((3,[3]),"x"),((4,[2]),"x"),((8,[1]),"x"),((5,[1]),"x"),((17,[0]),"x"),((2,[0]),"x")]
@@ -173,7 +178,7 @@ deriveMono m dx = (((monoCoef m) * exp, exponents), (monoVar m))
 -- ====================================================================================================================================
 
 -- 32a^6*x^7 + 70a^3*x^6*y^4 + 70a^3*x^6*y^4 + 150x^5*y^8
-aux = derivePoli  (multPoli [((2,[3,4]),"ax"),((5,[3,4]),"xy")] [((2,[3,4]),"ax"),((5,[3,4]),"xy")]) 'x' 
+-- aux = derivePoli  (multPoli [((2,[3,4]),"ax"),((5,[3,4]),"xy")] [((2,[3,4]),"ax"),((5,[3,4]),"xy")]) 'x' 
 
 
 -- 2x^3 + 3x^3 + 4x^2 + 8x + 5x + 17 + 2
@@ -184,7 +189,7 @@ aux = derivePoli  (multPoli [((2,[3,4]),"ax"),((5,[3,4]),"xy")] [((2,[3,4]),"ax"
 -- usar putStrLn para melhor visualização nos poliParse, mas tmb da para usar print
 main :: IO ()
 main = do
-    putStrLn $ poliParseToStr $ sumPoli_ aux
+    putStrLn $ poliParseToStr $ sumPoli_ [((2,[3]),"x"),((2,[3]),"x"),((2,[3]),"x"),((2,[3]),"x"),((3,[3]),"x"),((3,[3]),"x"),((3,[3]),"x"),((3,[3]),"x"),((4,[2]),"x"),((8,[1]),"x"),((5,[1]),"x"),((17,[0]),"x"),((2,[0]),"x"),((2,[0]),"x"),((17,[0]),"x"),((17,[0]),"x"),((17,[0]),"x"),((2,[0]),"x")]
     
 
 
