@@ -4,7 +4,7 @@
 		        a) normalizar polinómios
 		        b) adicionar polinómios
 		        c) multiplicar polinómios
-		        d) calcular a derivada de um polinómio
+		        d) calcular a derivada de um polinómio	X
 		        e) parsing string <-> polinomios
 -}
 
@@ -14,6 +14,9 @@ import Data.List
 replaceAtIndex n item ls
     | length ls <= n = error "Out of bounds replaceAtIndex"
     | otherwise = a ++ (item:b) where (a, (_:b)) = splitAt n ls
+
+
+-- ======================================================FUNCOES BASICAS AUX===============================================================
 
 -- Types definition
 type Monomio = ((Int, [Int]), String) -- 3yx^2 = ([3,], 2, "xy")
@@ -37,7 +40,22 @@ monoVar m = snd m
 noZeroCoef :: Polinomio -> Polinomio 
 noZeroCoef poli = filter (\mono -> 0 /= monoCoef mono) poli 
 
--- ==================================================================
+-- =======================================================PARSING DE POLI -> STR=============================================================
+
+poliParseToStr ::  Polinomio -> String 
+poliParseToStr poli =  if result == "" then "0" else result
+    where result = concat $  intersperse " + " $ map monoParseToStr $ noZeroCoef poli 
+    
+-- isto poe '+' entre cada monomio formatado mas se for negativo temos de ver dps...
+
+monoParseToStr::  Monomio -> String 
+monoParseToStr m =  (if (monoCoef m) /= 1 then show (monoCoef m) else "")  ++ together
+    where
+        aux = zip (monoExp m) (monoVar m)
+        together =  concat $ intersperse "*" [var : (if exp /= 1 then "^" ++ show exp else "") | (exp, var) <- aux ]
+
+
+-- ======================================================DERIVE POLINOMIALS========================================================
 
 monoContainsVar :: Monomio -> Char -> Bool
 monoContainsVar mono var = elem var $ monoVar mono
@@ -63,7 +81,11 @@ deriveMono m dx = (((monoCoef m) * exp, exponents), (monoVar m))
         auxFunc e acc = if (fst (snd e)) == dx then e else acc -- procura o elemento com as infos uteis
 
 
-main = print $ derivePoli [((4,[5,4]),"zy"), ((4,[5,3]),"xy") ,((4,[3,4]),"yz")] 'z'
+-- ====================================================================================================================================
+
+
+
+main = putStr $ poliParseToStr [((1,[3,4]),"yx")] 
 
 
 
