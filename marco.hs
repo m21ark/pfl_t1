@@ -46,7 +46,7 @@ noZeroCoef poli = filter (\mono -> 0 /= monoCoef mono) poli
 monoContainsVar :: Monomio -> Char -> Bool
 monoContainsVar mono var = elem var $ monoVar mono
 
--- =======================================================PARSING DE POLI -> STR=============================================================
+-- =======================================================PARSING DE POLI -> STR=======================================================
 
 -- Passa polinomio para string
 poliParseToStr ::  Polinomio -> String 
@@ -65,7 +65,28 @@ monoParseToStr m =  coefShow  ++ (if together /= "ç^0" then together else "")
         coefShow = (if (monoCoef m) /= 1 then show (monoCoef m) else "")
 
 
--- ======================================================DERIVE POLINOMIALS========================================================
+-- ======================================================SUM POLIS============================================================
+
+-- Falta agr apenas aplicar esta soma de monomios pares a pares em todo o polinomio...
+
+sumMonoCompatible :: Monomio -> Monomio -> Bool
+sumMonoCompatible m1 m2 = (monoVar m1 == monoVar m2) || (monoCoef m1 == monoCoef m2)
+
+-- Testar primeiro se dá para somar com sumMonoCompatible para evitar erro
+sumMono :: Monomio -> Monomio -> Monomio
+sumMono m1 m2
+    | not $ sumMonoCompatible m1 m2 = error "incompatible sum!"
+    | otherwise = (( (monoCoef m1) + (monoCoef m2) , monoExp m1), monoVar m1)
+
+
+-- ======================================================MULTIPLY POLIS============================================================
+
+
+multMono :: Monomio -> Monomio -> Monomio
+multMono m1 m2 = m1
+
+
+-- ======================================================DERIVE POLINOMIALS============================================================
 
 -- Derivar polinomio dado em ordem a char dado
 derivePoli :: Polinomio -> Char ->  Polinomio
@@ -92,9 +113,9 @@ deriveMono m dx = (((monoCoef m) * exp, exponents), (monoVar m))
 
 main :: IO ()
 main = do
-    putStrLn $ poliParseToStr [((1,[3,4]),"ax"),((1,[3,4]),"xy"),((2,[0]),"ç")]
-    putStrLn $ poliParseToStr [((1,[3,4]),"ax"),((1,[3,4]),"xy"),((2,[0]),"ç")]
-
+    putStrLn $ poliParseToStr [((2,[3,4]),"ax") , ((5,[3,4]),"xy") ]
+    putStrLn $ monoParseToStr $ sumMono ((2,[3,4]),"ax") ((5,[3,4]),"ax") 
+    putStrLn $ monoParseToStr $ multMono ((2,[3,4]),"ax") ((5,[3,4]),"xy") 
 
 
 
