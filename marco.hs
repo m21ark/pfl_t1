@@ -2,9 +2,9 @@
 
 {- OBJETIVOS
 		        a) normalizar polinómios                        TO-DO
-		        b) adicionar polinómios                         HALF DONE --> FALTA POLI + POLI (MONO + MONO TA FEITO)
-		        c) multiplicar polinómios                       DONE
-		        d) calcular a derivada de um polinómio	        DONE
+		        b) adicionar polinómios                         DONE?
+		        c) multiplicar polinómios                       DONE?
+		        d) calcular a derivada de um polinómio	        DONE?
 		        e) parsing string <-> polinomios                HALF DONE -> FALTA STR -> POLI
 -}
 
@@ -14,10 +14,12 @@ Adicionar exponencialização de polinomio
 permitir escolher derivada de n-esimo grau
 adicionar subtracoes
 
+
 -}
 
 import Data.List -- to use splitAt
 import Data.Char -- to use ord
+
 
 -- replace item at pos N with nem ITEM in list LS
 replaceAtIndex :: Int -> a -> [a] -> [a]
@@ -26,7 +28,7 @@ replaceAtIndex n item ls
     | otherwise = a ++ (item:b) where (a, (_:b)) = splitAt n ls
 
 
--- Basicamente transforma lista num set sorted e volta a lista --> talvez\ podiamos usar Data.Set se n fizer mal
+-- Basicamente transforma lista num set sorted e volta a lista --> talvez podiamos usar Data.Set se n fizer mal
 rmvdups :: (Ord a) => [a] -> [a]
 rmvdups = map head . group . sort
 
@@ -36,7 +38,7 @@ rmvdups = map head . group . sort
 type Monomio = ((Int, [Int]), String) -- 3yx^2 = ([3,], 2, "xy")
 type Polinomio = [Monomio]
 -- constantes sao representadas ((3 ,[0]),"ç") onde 3 é a constante!
-
+-- mas pelos meus testes tmb n faz mal usar como constante qualquer variavel em vez de 'ç'
 
 -- Get exponent in monomio
 monoExp ::  Monomio -> [Int]
@@ -73,12 +75,12 @@ monoContainsVar mono var = elem var $ monoVar mono
 
 -- ======================================================= PARSING DE POLI -> STR =======================================================
 
--- Passa polinomio para string
+-- Passa polinomio normalizado para string
 poliParseToStr ::  Polinomio -> String 
 poliParseToStr poli =  if result == "" then "0" else result
     where result = concat $  intersperse " + " $ map monoParseToStr $ noZeroCoef poli 
     
--- isto poe '+' entre cada monomio formatado mas se for negativo temos de ver dps...
+-- isto poe '+' entre cada monomio formatado mas se for negativo temos de ver dps cm fazer...
 
 -- passa monomio para string
 monoParseToStr::  Monomio -> String 
@@ -92,13 +94,11 @@ monoParseToStr m =  coefShow  ++ (if together /= "ç^0" then together else "")
 
 -- ====================================================== SUM POLIS ============================================================
 
--- TODO Falta agr apenas aplicar esta soma de monomios pares a pares em todo o polinomio...
-
-
+-- Verifica se a soma entre 2 monomios é possivel com base nas variaveis e respetivos expoentes
 sumMonoCompatible :: Monomio -> Monomio -> Bool
 sumMonoCompatible m1 m2 = (monoVar m1 == monoVar m2) && (monoExp m1 == monoExp m2)
 
--- Testar primeiro se dá para somar com sumMonoCompatible para evitar erro
+-- Testar primeiro se dá para somar com sumMonoCompatible para evitar chamar o erro de prevencao
 sumMono :: Monomio -> Monomio -> Monomio
 sumMono m1 m2
     | not $ sumMonoCompatible m1 m2 = error "incompatible sum!"
@@ -128,13 +128,15 @@ sumPoli p1 p2 = {- sumPoli $ parse $ -} p1 ++ p2
 multPoli :: Polinomio -> Polinomio -> Polinomio
 multPoli p1 p2 = [multMono (p1!!x) (p2!!y) | (x,y)<-genPairs]
     where
-        genPairs = [(x,y) | x<-[0..(length p1)-1], y<-[0..(length p2)-1]] 
+        genPairs = [(x,y) | x<-[0..(length p1)-1], y<-[0..(length p2)-1]]  -- acho q da para tirar a var genPairs e por td numa linha
         
 -- (2a^3*x^4 + 5x^3*y^4) * (2a^3*x^4 + 5x^3*y^4) = 4a^6*x^8 + 10a^3*x^7*y^4 + 10a^3*x^7*y^4 + 25x^6*y^8
 -- (multPoli [((2,[3,4]),"ax"),((5,[3,4]),"xy")] [((2,[3,4]),"ax"),((5,[3,4]),"xy")])
 
 
 -- (5 x^2 y^3)  *  (7 y^2 z^5) = 35 x^2 y^5 z^5
+
+-- Multiplica dois monomios
 multMono :: Monomio -> Monomio -> Monomio
 multMono m1 m2 =  ((coef, exp), vars)
     where
@@ -146,15 +148,17 @@ multMono m1 m2 =  ((coef, exp), vars)
             
 -- ====================================================== DERIVE POLINOMIALS ============================================================
 
--- Derivar polinomio dado em ordem a char dado
+-- Derivar polinomio dado em ordem a char dado. Vai derivar monomio a monomio
 derivePoli :: Polinomio -> Char ->  Polinomio
 derivePoli poli dx = noZeroCoef $ map (\mono -> deriver mono dx) poli 
 
-
+-- Função auxiliar para poupar tempo. Se aparecer um monomio sem a variavel a qual estamos a derivar, poe logo a constante zero
 deriver :: Monomio -> Char -> Monomio
 deriver m dx = if monoContainsVar m dx then deriveMono m dx else ((0,[1]),"ç") -- ç representa uma constante
 
+
 -- isto ja assume q monomio esta normalizado ent pode falhar se n estiver na forma C * X^a * Y^b ...
+-- Deriva monomio --> esta funcao esta um pouco confusa mas da para simplificar consideravelmente dps
 deriveMono :: Monomio -> Char -> Monomio
 deriveMono m dx = (((monoCoef m) * exp, exponents), (monoVar m))
     where
@@ -173,18 +177,23 @@ aux = derivePoli  (multPoli [((2,[3,4]),"ax"),((5,[3,4]),"xy")] [((2,[3,4]),"ax"
 
 
 -- 2x^3 + 3x^3 + 4x^2 + 8x + 5x + 17 + 2
--- [((2,[3]),"x"),((3,[3]),"x"),((4,[2]),"x"),((8,[1]),"x"),((5,[1]),"x"),((17,[0]),"x"),((2,[0]),"x")]
+-- aux3 = [((2,[3]),"x"),((3,[3]),"x"),((4,[2]),"x"),((8,[1]),"x"),((5,[1]),"x"),((17,[0]),"x"),((2,[0]),"x")]
 
 
 
-
+-- usar putStrLn para melhor visualização nos poliParse, mas tmb da para usar print
 main :: IO ()
 main = do
     putStrLn $ poliParseToStr $ sumPoli_ aux
+    
 
 
 
 -- Nota para ricardo: as funcoes a receber polinomios com coeficientes negativos estao a dar mas tem alguns bugs menores  
+-- Tmb n estou a fazer mtas verificacoes de input pq acho q isso pode ficar na funcao de normalização e assumir apenas q 
+-- input das funcoes ja vem normalizado (caso da soma é o mais critico estar td ordenadinho)
+-- dps para fazer output fazemos outra normalizacao para garantir ficar td direito
+-- input com parse de STR para Polinomio --> normalizar / verificar --> operacoes (precisam input normalizado) --> normalizar output again --> output com parse para STR
 
 
 
