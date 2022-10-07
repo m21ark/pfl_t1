@@ -1,17 +1,18 @@
 -- Trabalho 1 PFL
 
 {- OBJETIVOS
-		        a) normalizar polinómios
-		        b) adicionar polinómios
-		        c) multiplicar polinómios
-		        d) calcular a derivada de um polinómio	X
-		        e) parsing string <-> polinomios
+		        a) normalizar polinómios                        TO-DO
+		        b) adicionar polinómios                         HALF DONE --> FALTA POLI + POLI (MONO + MONO TA FEITO)
+		        c) multiplicar polinómios                       DONE
+		        d) calcular a derivada de um polinómio	        DONE
+		        e) parsing string <-> polinomios                HALF DONE -> FALTA STR -> POLI
 -}
 
 {-  Ideias extras: (nao sei se valorizam...) --> perguntar ao stor cm funciona o metodo de avaliacao
 
 Adicionar exponencialização de polinomio
 permitir escolher derivada de n-esimo grau
+adicionar subtracoes
 
 -}
 
@@ -50,7 +51,7 @@ monoVar ::  Monomio -> String
 monoVar m = snd m
 
 
--- Filtra monimios nulos de polinomio
+-- Filtra monimios nulos de polinomio -->
 noZeroCoef :: Polinomio -> Polinomio 
 noZeroCoef poli = filter (\mono -> 0 /= monoCoef mono) poli 
 
@@ -62,7 +63,12 @@ monoContainsVar mono var = elem var $ monoVar mono
 -- ======================================================= PARSING DE STR -> POLI =======================================================
 
 
+-- TODO A funcao noZeroCoef ja faz um inicio de parsing basico de remover monomios com coef nulo e q é usado em varias funcoes ...
 
+
+-- ======================================================= NORMALIZAR =======================================================
+
+-- TODO Normalizar inclui por por ordem decrescente de expoentes e ordem alfabetica de variaveis 
 
 
 -- ======================================================= PARSING DE POLI -> STR =======================================================
@@ -88,14 +94,31 @@ monoParseToStr m =  coefShow  ++ (if together /= "ç^0" then together else "")
 
 -- TODO Falta agr apenas aplicar esta soma de monomios pares a pares em todo o polinomio...
 
+
 sumMonoCompatible :: Monomio -> Monomio -> Bool
-sumMonoCompatible m1 m2 = (monoVar m1 == monoVar m2) || (monoCoef m1 == monoCoef m2)
+sumMonoCompatible m1 m2 = (monoVar m1 == monoVar m2) && (monoExp m1 == monoExp m2)
 
 -- Testar primeiro se dá para somar com sumMonoCompatible para evitar erro
 sumMono :: Monomio -> Monomio -> Monomio
 sumMono m1 m2
     | not $ sumMonoCompatible m1 m2 = error "incompatible sum!"
     | otherwise = (( (monoCoef m1) + (monoCoef m2) , monoExp m1), monoVar m1)
+    
+    
+-- Pega num polinomio normaliado q é a mistura/soma de dois e agora junta as parcelas possiveis de juntar
+sumPoli_ :: Polinomio -> Polinomio 
+sumPoli_ [] = []
+sumPoli_  (m1:[]) = [m1]
+sumPoli_  (m1:ps) = if sumMonoCompatible m1 m2 then (sumMono m1 m2) : sumPoli_ (tail ps) else  m1 : sumPoli_ ps
+    where m2 = head ps
+
+-- 2x^3 + 3x^3 + 4x^2 + 8x + 5x + 17 + 2 = 5x^3 + 4x^2 + 13x+ 19 
+-- [((2,[3]),"x"),((3,[3]),"x"),((4,[2]),"x"),((8,[1]),"x"),((5,[1]),"x"),((17,[0]),"x"),((2,[0]),"x")]
+
+    
+-- Isto junta os dois polinomios num, mas dps isto precisa levar um parse para dps sim chamar sumPoli_ q necessita de receber input ja normalizado
+sumPoli :: Polinomio -> Polinomio -> Polinomio
+sumPoli p1 p2 = {- sumPoli $ parse $ -} p1 ++ p2
 
 
 -- ====================================================== MULTIPLY POLIS ============================================================
@@ -108,6 +131,7 @@ multPoli p1 p2 = [multMono (p1!!x) (p2!!y) | (x,y)<-genPairs]
         genPairs = [(x,y) | x<-[0..(length p1)-1], y<-[0..(length p2)-1]] 
         
 -- (2a^3*x^4 + 5x^3*y^4) * (2a^3*x^4 + 5x^3*y^4) = 4a^6*x^8 + 10a^3*x^7*y^4 + 10a^3*x^7*y^4 + 25x^6*y^8
+-- (multPoli [((2,[3,4]),"ax"),((5,[3,4]),"xy")] [((2,[3,4]),"ax"),((5,[3,4]),"xy")])
 
 
 -- (5 x^2 y^3)  *  (7 y^2 z^5) = 35 x^2 y^5 z^5
@@ -144,14 +168,23 @@ deriveMono m dx = (((monoCoef m) * exp, exponents), (monoVar m))
 
 -- ====================================================================================================================================
 
+-- 32a^6*x^7 + 70a^3*x^6*y^4 + 70a^3*x^6*y^4 + 150x^5*y^8
+aux = derivePoli  (multPoli [((2,[3,4]),"ax"),((5,[3,4]),"xy")] [((2,[3,4]),"ax"),((5,[3,4]),"xy")]) 'x' 
+
+
+-- 2x^3 + 3x^3 + 4x^2 + 8x + 5x + 17 + 2
+-- [((2,[3]),"x"),((3,[3]),"x"),((4,[2]),"x"),((8,[1]),"x"),((5,[1]),"x"),((17,[0]),"x"),((2,[0]),"x")]
+
+
+
 
 main :: IO ()
 main = do
-    putStrLn $ poliParseToStr $ derivePoli  (multPoli [((2,[3,4]),"ax"),((5,[3,4]),"xy")] [((2,[3,4]),"ax"),((5,[3,4]),"xy")]) 'x' 
+    putStrLn $ poliParseToStr $ sumPoli_ aux
 
 
 
-
+-- Nota para ricardo: as funcoes a receber polinomios com coeficientes negativos estao a dar mas tem alguns bugs menores  
 
 
 
