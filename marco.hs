@@ -8,6 +8,13 @@
 		        e) parsing string <-> polinomios
 -}
 
+{-  Ideias extras: (nao sei se valorizam...) --> perguntar ao stor cm funciona o metodo de avaliacao
+
+Adicionar exponencialização de polinomio
+permitir escolher derivada de n-esimo grau
+
+-}
+
 import Data.List -- to use splitAt
 import Data.Char -- to use ord
 
@@ -18,7 +25,7 @@ replaceAtIndex n item ls
     | otherwise = a ++ (item:b) where (a, (_:b)) = splitAt n ls
 
 
--- Basicamente transforma lista num set sorted e volta a lista --> talvez podiamos usar Data.Set se n fizer mal
+-- Basicamente transforma lista num set sorted e volta a lista --> talvez\ podiamos usar Data.Set se n fizer mal
 rmvdups :: (Ord a) => [a] -> [a]
 rmvdups = map head . group . sort
 
@@ -51,7 +58,14 @@ noZeroCoef poli = filter (\mono -> 0 /= monoCoef mono) poli
 monoContainsVar :: Monomio -> Char -> Bool
 monoContainsVar mono var = elem var $ monoVar mono
 
--- =======================================================PARSING DE POLI -> STR=======================================================
+
+-- ======================================================= PARSING DE STR -> POLI =======================================================
+
+
+
+
+
+-- ======================================================= PARSING DE POLI -> STR =======================================================
 
 -- Passa polinomio para string
 poliParseToStr ::  Polinomio -> String 
@@ -70,9 +84,9 @@ monoParseToStr m =  coefShow  ++ (if together /= "ç^0" then together else "")
         coefShow = (if (monoCoef m) /= 1 then show (monoCoef m) else "")
 
 
--- ======================================================SUM POLIS============================================================
+-- ====================================================== SUM POLIS ============================================================
 
--- Falta agr apenas aplicar esta soma de monomios pares a pares em todo o polinomio...
+-- TODO Falta agr apenas aplicar esta soma de monomios pares a pares em todo o polinomio...
 
 sumMonoCompatible :: Monomio -> Monomio -> Bool
 sumMonoCompatible m1 m2 = (monoVar m1 == monoVar m2) || (monoCoef m1 == monoCoef m2)
@@ -84,9 +98,17 @@ sumMono m1 m2
     | otherwise = (( (monoCoef m1) + (monoCoef m2) , monoExp m1), monoVar m1)
 
 
--- ======================================================MULTIPLY POLIS============================================================
+-- ====================================================== MULTIPLY POLIS ============================================================
 
--- Falta agora aplicar a distributiva a cada par de monomios...
+
+-- Aplica a distributiva entre cada par de monomios dos polinomios: (m1 + m2 + m3 ...) * (m'1 + m'2 + m'3 ...)
+multPoli :: Polinomio -> Polinomio -> Polinomio
+multPoli p1 p2 = [multMono (p1!!x) (p2!!y) | (x,y)<-genPairs]
+    where
+        genPairs = [(x,y) | x<-[0..(length p1)-1], y<-[0..(length p2)-1]] 
+        
+-- (2a^3*x^4 + 5x^3*y^4) * (2a^3*x^4 + 5x^3*y^4) = 4a^6*x^8 + 10a^3*x^7*y^4 + 10a^3*x^7*y^4 + 25x^6*y^8
+
 
 -- (5 x^2 y^3)  *  (7 y^2 z^5) = 35 x^2 y^5 z^5
 multMono :: Monomio -> Monomio -> Monomio
@@ -98,7 +120,7 @@ multMono m1 m2 =  ((coef, exp), vars)
         findVarExp c m = sum [e | (v,e) <- aux , v == c] 
             where aux = zip (monoVar m) (monoExp m)
             
--- ======================================================DERIVE POLINOMIALS============================================================
+-- ====================================================== DERIVE POLINOMIALS ============================================================
 
 -- Derivar polinomio dado em ordem a char dado
 derivePoli :: Polinomio -> Char ->  Polinomio
@@ -125,14 +147,7 @@ deriveMono m dx = (((monoCoef m) * exp, exponents), (monoVar m))
 
 main :: IO ()
 main = do
-    putStrLn $ poliParseToStr [((2,[3,4]),"ax") , ((5,[3,4]),"xy") ]
-    putStrLn $ monoParseToStr $ sumMono ((2,[3,4]),"ax") ((5,[3,4]),"ax") 
-    putStrLn $ monoParseToStr $ multMono ((5,[2,3]),"xy") ((7,[2,5]),"yz") 
-
-
-
-
-
+    putStrLn $ poliParseToStr $ derivePoli  (multPoli [((2,[3,4]),"ax"),((5,[3,4]),"xy")] [((2,[3,4]),"ax"),((5,[3,4]),"xy")]) 'x' 
 
 
 
