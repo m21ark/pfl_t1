@@ -71,6 +71,44 @@ monoContainsVar mono var = elem var $ monoVar mono
 -- ======================================================= NORMALIZAR =======================================================
 
 -- TODO Normalizar inclui por por ordem decrescente de expoentes e ordem alfabetica de variaveis 
+-- Expoentes de 0 transforma em 1 -- nozerocoef
+
+-- normMono :: Monomio -> Monomio
+-- normMono m =   noZeroCoef 
+
+-- (sortby ()) . (sumPoli_) . (groupby (monoCoef)) . noZeroCoef 
+
+cleanZeroExp :: [Int] -> String -> ([Int], String) 
+cleanZeroExp a b = ([z | z <- a, z /= 0], [snd x | x <- zip a b, fst x /= 0]) 
+
+-- main = print (cleanZero [4,0,1] "xyz") - a dar 
+noZeroExp :: Polinomio -> Polinomio
+noZeroExp p = [((fst (fst x), fst y), snd y) | x <- p, let y = cleanZeroExp (snd (fst x)) (snd x) ]
+                
+-- main = print (noZeroExp [((0,[0]),"x")]) -- WORKS ::: SEE CASE
+
+-- main = print (noZeroExp ([((0,[3]),"x"),((2,[1]),"y"), ((5,[1]),"z"), ((1,[1]),"y"), ((7,[2,0]),"zy")  ]))
+
+monoSort :: Monomio -> Monomio -> Ordering
+monoSort a b | snd a > snd b = LT 
+             | otherwise = GT
+
+monoSortCoef :: Ord x => (a, x) -> (a, x) -> Ordering
+monoSortCoef x b | snd x < snd b = LT
+                 | otherwise = GT
+
+monoSortVars :: Monomio -> Monomio
+monoSortVars x = ((fst . fst $ x, a), b)
+                    where (a, b) = unzip [s | s <- sortBy (monoSortCoef) (zip (snd (fst x)) (snd x))]  
+
+normPoli :: Polinomio -> Polinomio
+normPoli p =   noZeroExp . noZeroCoef . sumPoli_ . (sortBy monoSort) $ [monoSortVars x | x <- p]
+            -- TODO :: decompor com mais funções
+
+-- (map sumPoli (groupBy (\a b-> snd a == snd b)))
+--- (groupBy (\a b -> monoCoef b == monoCoef a)) 
+
+main = print(normPoli ([((0,[3]),"x"),((2,[1, 1,1]),"zyx"), ((5,[1]),"z"), ((1,[1,1,1]),"zxy"), ((7,[0]) ,"z")  ]))
 
 
 -- ======================================================= PARSING DE POLI -> STR =======================================================
@@ -187,9 +225,9 @@ deriveMono m dx = (((monoCoef m) * exp, exponents), (monoVar m))
 
 
 -- usar putStrLn para melhor visualização nos poliParse, mas tmb da para usar print
-main :: IO ()
-main = do
-    putStrLn $ poliParseToStr $ sumPoli_ [((2,[3]),"x"),((2,[3]),"x"),((2,[3]),"x"),((2,[3]),"x"),((3,[3]),"x"),((3,[3]),"x"),((3,[3]),"x"),((3,[3]),"x"),((4,[2]),"x"),((8,[1]),"x"),((5,[1]),"x"),((17,[0]),"x"),((2,[0]),"x"),((2,[0]),"x"),((17,[0]),"x"),((17,[0]),"x"),((17,[0]),"x"),((2,[0]),"x")]
+--main :: IO ()
+--main = do
+  --  putStrLn $ poliParseToStr $ sumPoli_ [((2,[3]),"x"),((2,[3]),"x"),((2,[3]),"x"),((2,[3]),"x"),((3,[3]),"x"),((3,[3]),"x"),((3,[3]),"x"),((3,[3]),"x"),((4,[2]),"x"),((8,[1]),"x"),((5,[1]),"x"),((17,[0]),"x"),((2,[0]),"x"),((2,[0]),"x"),((17,[0]),"x"),((17,[0]),"x"),((17,[0]),"x"),((2,[0]),"x")]
     
 
 
