@@ -20,6 +20,7 @@ adicionar subtracoes
 import Data.List -- to use splitAt
 import Data.Char -- to use ord
 import qualified Data.Map as Map
+import System.IO
 
 -- replace item at pos N with nem ITEM in list LS
 replaceAtIndex :: Int -> a -> [a] -> [a]
@@ -123,7 +124,7 @@ normPoli p =   sumPoli_ . (sortBy monoSort) . noZeroExp . noZeroCoef $ [monoSort
 
 
 -- main = print (normaliseVars ((0,[3,1,3,4]),"xxyy"))
-main = print(poliParseToStr . normPoli $ ([((0,[3]),"x"),((2,[1, 1,1]),"zyx"), ((5,[1,2,4,3]),"zzyx"), ((1,[1,1,1]),"zxy"), ((7,[0]) ,"z")  ]))
+-- main = print(poliParseToStr . normPoli $ ([((0,[3]),"x"),((2,[1, 1,1]),"zyx"), ((5,[1,2,4,3]),"zzyx"), ((1,[1,1,1]),"zxy"), ((7,[0]) ,"z")  ]))
 
 
 --vars = rmvdups $ (monoVar m1) ++ (monoVar m2)
@@ -253,6 +254,28 @@ deriveMono m dx = (((monoCoef m) * exp, exponents), (monoVar m))
 --main = do
   --  putStrLn $ poliParseToStr $ sumPoli_ [((2,[3]),"x"),((2,[3]),"x"),((2,[3]),"x"),((2,[3]),"x"),((3,[3]),"x"),((3,[3]),"x"),((3,[3]),"x"),((3,[3]),"x"),((4,[2]),"x"),((8,[1]),"x"),((5,[1]),"x"),((17,[0]),"x"),((2,[0]),"x"),((2,[0]),"x"),((17,[0]),"x"),((17,[0]),"x"),((17,[0]),"x"),((2,[0]),"x")]
     
+
+menu :: Int -> IO()
+menu x | x == 1 = do print x
+       | x == 2 = do print x
+       | x == 3 = do print x
+       | x == 4 = do print x
+       | otherwise = error "Invalid menu value"
+
+main :: IO ()
+main   = do putStrLn "---------------------------WELCOME---------------------------"
+            putStrLn "----------------------Choose an option-----------------------"
+            putStrLn "                                                             "
+            putStrLn "                      1) derive                              "
+            putStrLn "                      2) add                                 "
+            putStrLn "                      3) multiplication                      "
+            putStrLn "                      4) Normalization                       "
+            putStrLn "-------------------------------------------------------------"
+            putStrLn "-------------------------------------------------------------"
+            x <- getLine
+            menu . read $ x
+
+            
 
 
 
