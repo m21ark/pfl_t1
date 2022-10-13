@@ -19,7 +19,7 @@ adicionar subtracoes
 
 import Data.List -- to use splitAt
 import Data.Char -- to use ord
-
+import qualified Data.Map as Map
 
 -- replace item at pos N with nem ITEM in list LS
 replaceAtIndex :: Int -> a -> [a] -> [a]
@@ -37,6 +37,7 @@ rmvdups = map head . group . sort
 -- Types definition
 type Monomio = ((Int, [Int]), String) -- 3yx^2 = ([3,], 2, "xy")
 type Polinomio = [Monomio]
+
 -- constantes sao representadas ((3 ,[0]),"ç") onde 3 é a constante!
 -- mas pelos meus testes tmb n faz mal usar como constante qualquer variavel em vez de 'ç'
 
@@ -89,26 +90,49 @@ noZeroExp p = [((fst (fst x), fst y), snd y) | x <- p, let y = cleanZeroExp (snd
 
 -- main = print (noZeroExp ([((0,[3]),"x"),((2,[1]),"y"), ((5,[1]),"z"), ((1,[1]),"y"), ((7,[2,0]),"zy")  ]))
 
+checkGreaterExp :: [Int] -> [Int] -> Bool
+checkGreaterExp [] [] = False
+checkGreaterExp (x:xs) (y:ys) | x <  y = False
+                              | x >  y = True
+                              | otherwise = checkGreaterExp xs ys
+
+
 monoSort :: Monomio -> Monomio -> Ordering
 monoSort a b | snd a > snd b = LT 
-             | otherwise = GT
+             | snd a < snd b = GT
+             | checkGreaterExp  (monoExp a) (monoExp b) = GT
+             | otherwise = LT
 
-monoSortCoef :: Ord x => (a, x) -> (a, x) -> Ordering
-monoSortCoef x b | snd x < snd b = LT
-                 | otherwise = GT
+monoSortVar :: Ord x => (a, x) -> (a, x) -> Ordering
+monoSortVar x b | snd x < snd b = LT
+                | otherwise = GT
 
 monoSortVars :: Monomio -> Monomio
-monoSortVars x = ((fst . fst $ x, a), b)
-                    where (a, b) = unzip [s | s <- sortBy (monoSortCoef) (zip (snd (fst x)) (snd x))]  
+monoSortVars x = ((monoCoef x, a), b)
+                    where (a, b) = unzip [s | s <- sortBy (monoSortVar) (zip (monoExp x) (monoVar x))]  
 
+normaliseVars :: Monomio -> Monomio
+normaliseVars p =  ((monoCoef p, exps), vars)
+                    where z = groupBy (\a b -> snd a == snd b)  [x | x <- zip (monoExp p) (monoVar p)] 
+                          exps = [sum [fst e | e <- ex] | ex <- z] 
+                          vars = [ snd (var !! 0) | var <- z]
+                          
+--groupBy (\a b -> MonoVar a == MonoVar b)  
 normPoli :: Polinomio -> Polinomio
-normPoli p =   noZeroExp . noZeroCoef . sumPoli_ . (sortBy monoSort) $ [monoSortVars x | x <- p]
+normPoli p =   sumPoli_ . (sortBy monoSort) . noZeroExp . noZeroCoef $ [monoSortVars . normaliseVars $ x | x <- p]
+
+
+-- main = print (normaliseVars ((0,[3,1,3,4]),"xxyy"))
+main = print(poliParseToStr . normPoli $ ([((0,[3]),"x"),((2,[1, 1,1]),"zyx"), ((5,[1,2,4,3]),"zzyx"), ((1,[1,1,1]),"zxy"), ((7,[0]) ,"z")  ]))
+
+
+--vars = rmvdups $ (monoVar m1) ++ (monoVar m2)
+--exp = [(findVarExp c m1) + (findVarExp c m2) | c <- vars ]
+
             -- TODO :: decompor com mais funções
 
 -- (map sumPoli (groupBy (\a b-> snd a == snd b)))
 --- (groupBy (\a b -> monoCoef b == monoCoef a)) 
-
-main = print(normPoli ([((0,[3]),"x"),((2,[1, 1,1]),"zyx"), ((5,[1]),"z"), ((1,[1,1,1]),"zxy"), ((7,[0]) ,"z")  ]))
 
 
 -- ======================================================= PARSING DE POLI -> STR =======================================================
