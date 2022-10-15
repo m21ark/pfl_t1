@@ -253,28 +253,91 @@ deriveMono m dx = (((monoCoef m) * exp, exponents), (monoVar m))
 --main :: IO ()
 --main = do
   --  putStrLn $ poliParseToStr $ sumPoli_ [((2,[3]),"x"),((2,[3]),"x"),((2,[3]),"x"),((2,[3]),"x"),((3,[3]),"x"),((3,[3]),"x"),((3,[3]),"x"),((3,[3]),"x"),((4,[2]),"x"),((8,[1]),"x"),((5,[1]),"x"),((17,[0]),"x"),((2,[0]),"x"),((2,[0]),"x"),((17,[0]),"x"),((17,[0]),"x"),((17,[0]),"x"),((2,[0]),"x")]
-    
 
-menu :: Int -> IO()
-menu x | x == 1 = do print x
-       | x == 2 = do print x
-       | x == 3 = do print x
-       | x == 4 = do print x
-       | otherwise = error "Invalid menu value"
+data Expr = Add Expr Expr
+          | Mult Expr Expr
+          | Poli Polinomio
+          deriving (Eq, Show)
+
+eval :: Expr -> Polinomio 
+eval (Poli n) = n
+eval (Add e1 e2) = sumPoli_ ((eval e1) ++ (eval e2))
+eval (Mult e1 e2) = multPoli (eval e1) (eval e2)
+
+expression = "f"
+
+-- isMono = isDigit -- TODO
+-- 
+-- --newtype Parser a = Parser { parse :: String -> [(a, String)] }
+-- 
+-- parse :: String -> (String, Expr)
+-- parse [] = ("", Poli [((0, [1]), "x")])
+-- parse (' ':more) = parse more
+-- --parse ('-':more) = let (remainder, e) = parse more
+-- --                   in (remainder, Sub e)
+-- parse ('+':more) = let (remainder, e) = parse more
+--                    in (remainder, Poli [((2, [1]), "x")])
+-- parse ('*':more) = undefined -- TODO
+-- parse s@(num:more) | isMono num = ("", ((snd . parse $ fs )) )
+--                                         where x = parseMono $ s
+--                                               fs = fst $ x 
+--                                               sn = snd $ x
+-- 
+-- parse s = error ("unexpected input: " ++ s)
+
+-- Se for monomio chamo o parse de monomio 
+
+findValue :: (String, Int) -> (String, Int) 
+findValue ([], exp) = ("", exp)
+findValue (x:xs, exp) | isDigit x = findValue (xs, exp * 10 + digitToInt x)
+                      | otherwise = (x:xs, exp)
+
+parseMono :: (String, Monomio) -> (String, Monomio)
+parseMono ([], monomio) = ("", monomio)
+parseMono (s:m, mono) | isDigit s = parseMono (left , ((monoCoef mono * coef, monoExp mono), monoVar mono))
+                        where r = findValue (m, digitToInt s)
+                              coef = snd r
+                              left = fst r 
+parseMono (s:o:m, mono) | isLetter s && o == '^' = parseMono (left, ((monoCoef mono, monoExp mono ++ [exps]), monoVar mono ++ [s]))
+                        | isLetter s = parseMono (o:m, ((monoCoef mono, monoExp mono ++ [1]), monoVar mono ++ [s]))
+                        where r = findValue (m, 0)
+                              exps = snd r
+                              left = fst r
+parseMono (s:m, mono) | isLetter s = parseMono (m, ((monoCoef mono, monoExp mono ++ [1]), monoVar mono ++ [s])) 
+parseMono ('*':m, a) = parseMono (m, a)
+parseMono (' ':m, a) = parseMono (m, a)
+parseMono ('+':m, a) = (m , a)
+parseMono ('-':m, a) = ('-':m , a)
+--parseMono (_, a) = (_ , a)
+
+
+
+parsePolo :: String -> Polinomio 
+parsePolo "" = []
+parsePolo (s:s') | s == '-' = [((- (monoCoef mono), monoExp mono), monoVar mono)] ++ parsePolo toParseStr
+                where (toParseStr, mono) = parseMono (s', ((1, []), "")) -- é preciso meter o numero depois do -
+parsePolo s =  [mono] ++ parsePolo toParseStr
+                where (toParseStr, mono) = parseMono (s, ((1, []), ""))
+
+
+
+
+--parseMono (s:m) | isVar s = (m , Poli [((digitToInt $ s, []), "")])
+
+
+--parseStr :: String -> Polinomio
+--parseStr str = runParser  (expression) str
+--https://oliverbalfour.github.io/haskell/2020/08/09/parsing-arithmetic-with-monads.html
 
 main :: IO ()
 main   = do putStrLn "---------------------------WELCOME---------------------------"
-            putStrLn "----------------------Choose an option-----------------------"
-            putStrLn "                                                             "
-            putStrLn "                      1) derive                              "
-            putStrLn "                      2) add                                 "
-            putStrLn "                      3) multiplication                      "
-            putStrLn "                      4) Normalization                       "
             putStrLn "-------------------------------------------------------------"
-            putStrLn "-------------------------------------------------------------"
-            x <- getLine
-            menu . read $ x
-
+            print . eval $ (Mult (Add (Poli [((1, [0]), "x")]) (Poli [((1, [0]), "x")])) (Poli [((2, [0]), "x")]))
+           -- print . poliParseToStr . parseStr $ "fllf"
+            print . snd . parseMono $ ("x^2 * 30x^2y^444z^2929y2", ((1, []), ""))
+            print . isDigit $ '\n'
+            print . parsePolo $ ("-2x^2 * 30x^2y^444z^2929y2 + x^2")
+            
             
 
 
@@ -288,3 +351,4 @@ main   = do putStrLn "---------------------------WELCOME------------------------
 
 
 
+-- https://hackage.haskell.org/package/computational-algebra-0.0.1.1/docs/Algebra-Ring-Polynomial-Parser.html
