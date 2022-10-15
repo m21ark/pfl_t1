@@ -16,11 +16,13 @@ adicionar subtracoes
 
 
 -}
+module Marco where
 
 import Data.List -- to use splitAt
 import Data.Char -- to use ord
 import qualified Data.Map as Map
 import System.IO
+import Control.Applicative
 
 -- replace item at pos N with nem ITEM in list LS
 replaceAtIndex :: Int -> a -> [a] -> [a]
@@ -120,7 +122,7 @@ normaliseVars p =  ((monoCoef p, exps), vars)
                           
 --groupBy (\a b -> MonoVar a == MonoVar b)  
 normPoli :: Polinomio -> Polinomio
-normPoli p =   sumPoli_ . (sortBy monoSort) . noZeroExp . noZeroCoef $ [monoSortVars . normaliseVars $ x | x <- p]
+normPoli p =   sumPoli_ . (sortBy monoSort) . noZeroExp . noZeroCoef $ [normaliseVars . monoSortVars $ x | x <- p]
 
 
 -- main = print (normaliseVars ((0,[3,1,3,4]),"xxyy"))
@@ -257,12 +259,14 @@ deriveMono m dx = (((monoCoef m) * exp, exponents), (monoVar m))
 data Expr = Add Expr Expr
           | Mult Expr Expr
           | Poli Polinomio
+          | Pow Expr Char
           deriving (Eq, Show)
 
 eval :: Expr -> Polinomio 
 eval (Poli n) = n
 eval (Add e1 e2) = sumPoli_ ((eval e1) ++ (eval e2))
 eval (Mult e1 e2) = multPoli (eval e1) (eval e2)
+eval (Pow e1 e2) = derivePoli (eval e1) e2
 
 expression = "f"
 
@@ -308,24 +312,42 @@ parseMono ('*':m, a) = parseMono (m, a)
 parseMono (' ':m, a) = parseMono (m, a)
 parseMono ('+':m, a) = (m , a)
 parseMono ('-':m, a) = ('-':m , a)
---parseMono (_, a) = (_ , a)
+parseMono (')':m, a) = (')':m, a)
 
 
 
 parsePolo :: String -> Polinomio 
 parsePolo "" = []
+parsePolo (s:s') | s == ')' = []
 parsePolo (s:s') | s == '-' = [((- (monoCoef mono), monoExp mono), monoVar mono)] ++ parsePolo toParseStr
                 where (toParseStr, mono) = parseMono (s', ((1, []), "")) -- é preciso meter o numero depois do -
 parsePolo s =  [mono] ++ parsePolo toParseStr
                 where (toParseStr, mono) = parseMono (s, ((1, []), ""))
 
 
-
-
 --parseMono (s:m) | isVar s = (m , Poli [((digitToInt $ s, []), "")])
 
+findMatchingParethesis :: String -> String
+findMatchingParethesis (')':m) = m
+findMatchingParethesis (s:m) = findMatchingParethesis m
 
---parseStr :: String -> Polinomio
+parseStr :: String -> Expr
+parseStr [] = Poli [((0, [0]), "x")]
+parseStr (x:xs) | x == '(' && (if left /=[] then head left else '0') == '*' = Mult (Poli . parsePolo $ xs) (parseStr $ left)
+                | x == '(' = Add (Poli . parsePolo $ xs) (parseStr left)
+                | otherwise = parseStr xs
+                where left = findMatchingParethesis xs
+
+
+-- parseStr :: String -> [Expr]
+-- parseStr [] = []
+-- parseStr (x:xs) | x == '(' && (if left /=[] then head left else '0') == '*' = [Mult (Poli . parsePolo $ xs) (head . parseStr $ left)] ++ parseStr left
+--                 | x == '(' = [Poli . parsePolo $ xs] ++ (parseStr left)
+--                 | otherwise = parseStr xs
+--                 where left = findMatchingParethesis xs
+--                 
+                                  
+
 --parseStr str = runParser  (expression) str
 --https://oliverbalfour.github.io/haskell/2020/08/09/parsing-arithmetic-with-monads.html
 
@@ -334,10 +356,11 @@ main   = do putStrLn "---------------------------WELCOME------------------------
             putStrLn "-------------------------------------------------------------"
             print . eval $ (Mult (Add (Poli [((1, [0]), "x")]) (Poli [((1, [0]), "x")])) (Poli [((2, [0]), "x")]))
            -- print . poliParseToStr . parseStr $ "fllf"
-            print . snd . parseMono $ ("x^2 * 30x^2y^444z^2929y2", ((1, []), ""))
+            print . snd . parseMono $ ("x^230x^2y^444z^2929y2", ((1, []), ""))
             print . isDigit $ '\n'
-            print . parsePolo $ ("-2x^2 * 30x^2y^444z^2929y2 + x^2")
-            
+            print . eval . parseStr $ ("(-2y^1)*(2x^2)")
+            print . normPoli $ [((-120,[4,2,1,444,2929]),"xxyyz"),((1,[2]),"x")]
+            print (normPoli [((2,[3,1,3,4,2]),"xxyzy")])
             
 
 

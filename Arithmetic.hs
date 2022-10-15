@@ -1,6 +1,8 @@
+module Arithmetic where
 
 import Data.Char (isDigit, isSpace, isLetter)
 import Control.Applicative
+import Marco
 
 newtype Parser a = Parser { parse :: String -> [(a, String)] }
 
@@ -51,14 +53,14 @@ string (c:cs) = (:) <$> char c <*> string cs
 token :: String -> Parser String
 token symb = space *> string symb
 
-mul :: Parser (Int -> Int -> Int)
-mul = token "*" *> pure (*) <|> token "/" *> pure div
+mul :: Parser (Expr -> Expr -> Expr)
+mul = token "*" *> pure Mult
 
-add :: Parser (Int -> Int -> Int)
-add = token "+" *> pure (+) <|> token "-" *> pure (-)
+add :: Parser (Expr -> Expr -> Expr)
+add = token "+" *> pure Add 
 
-pow :: Parser (Int -> Int -> Int)
-pow = (token "^" <|> token "**") *> pure (^)
+pow :: Parser (Expr -> Char -> Expr)
+pow = (token "^" <|> token "**") *> pure Pow
 
 integer :: Parser Int
 integer = let positive = fmap read (some (satisfy isDigit))
@@ -75,14 +77,14 @@ chainr1 :: Parser a -> Parser (a -> a -> a) -> Parser a
 p `chainr1` op = p >>= rest
   where rest a =  (op <*> pure a <*> (p >>= rest)) <|> return a
 
-expr = subexpr `chainr1` pow `chainl1` mul `chainl1` add
-subexpr = token "(" *> expr <* token ")" <|> integer
+expr = subexpr `chainr1` add -- pow `chainl1` mul `chainl1` add
+subexpr = token "(" *> parsePolo <* token ")"
 
 repl :: String -> String
 repl cs = let results = parse expr cs in
   case results of
     [] -> "Invalid expression"
-    ((num, _):_) -> show num
+    num -> show num
 
 main :: IO ()
 main = interact (unlines . map repl . lines)
