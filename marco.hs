@@ -16,7 +16,7 @@ adicionar subtracoes
 
 
 -}
-module Marco where
+--module Marco where
 
 import Data.List -- to use splitAt
 import Data.Char -- to use ord
@@ -332,8 +332,13 @@ findMatchingParethesis (')':m) = m
 findMatchingParethesis (s:m) = findMatchingParethesis m
 
 parseStr :: String -> Expr
-parseStr [] = Poli [((0, [0]), "x")]
+parseStr [] = Poli [((0, [0]), "")]
+parseStr ('d':var:'(':xs) | isLetter var && (if left /=[] then head left else '0') == '*' = Mult (Pow (Poli . parsePolo $ xs) var ) (parseStr $ left)
+                          | isLetter var && (if left /=[] then head left else '0') == '+' = Add (Pow (Poli . parsePolo $ xs) var ) (parseStr $ left)
+                          | otherwise = Pow (Poli . parsePolo $ xs) var
+                where left = findMatchingParethesis xs
 parseStr (x:xs) | x == '(' && (if left /=[] then head left else '0') == '*' = Mult (Poli . parsePolo $ xs) (parseStr $ left)
+                | x == '(' && (if left /=[] then head left else '0') == '+' = Add (Poli . parsePolo $ xs) (parseStr $ left)
                 | x == '(' = Add (Poli . parsePolo $ xs) (parseStr left)
                 | otherwise = parseStr xs
                 where left = findMatchingParethesis xs
@@ -354,13 +359,12 @@ parseStr (x:xs) | x == '(' && (if left /=[] then head left else '0') == '*' = Mu
 main :: IO ()
 main   = do putStrLn "---------------------------WELCOME---------------------------"
             putStrLn "-------------------------------------------------------------"
-            print . eval $ (Mult (Add (Poli [((1, [0]), "x")]) (Poli [((1, [0]), "x")])) (Poli [((2, [0]), "x")]))
-           -- print . poliParseToStr . parseStr $ "fllf"
-            print . snd . parseMono $ ("x^230x^2y^444z^2929y2", ((1, []), ""))
-            print . isDigit $ '\n'
-            print . eval . parseStr $ ("(-2y^1)*(2x^2)")
-            print . normPoli $ [((-120,[4,2,1,444,2929]),"xxyyz"),((1,[2]),"x")]
-            print (normPoli [((2,[3,1,3,4,2]),"xxyzy")])
+            putStrLn "Polinomials must be circle by parentheses."
+            putStrLn "examples: dx(x^1)*(4x+1)+(2)"
+            putStrLn "          (4x^5y)*(5x^2)"
+            putStrLn "          {(x^3) + (x^3+3)}*{(4x+1)+(2)} -- todo"
+
+            interact (  unlines . map (poliParseToStr . normPoli . eval . parseStr) . lines )
             
 
 
