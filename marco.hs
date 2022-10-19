@@ -16,7 +16,7 @@ adicionar subtracoes
 
 
 -}
---module Marco where
+module Marco where
 
 import Data.List -- to use splitAt
 import Data.Char -- to use ord
@@ -259,7 +259,7 @@ deriveMono m dx = (((monoCoef m) * exp, exponents), (monoVar m))
 data Expr = Add Expr Expr
           | Mult Expr Expr
           | Poli Polinomio
-          | Pow Expr Char
+          | Pow Expr Char -- NOT POW CHANGE LATER 
           deriving (Eq, Show)
 
 eval :: Expr -> Polinomio 
@@ -316,7 +316,7 @@ parseMono (')':m, a) = (')':m, a)
 
 
 
-parsePolo :: String -> Polinomio 
+parsePolo :: String -> Polinomio
 parsePolo "" = []
 parsePolo (s:s') | s == ')' = []
 parsePolo (s:s') | s == '-' = [((- (monoCoef mono), monoExp mono), monoVar mono)] ++ parsePolo toParseStr
@@ -356,15 +356,19 @@ parseStr (x:xs) | x == '(' && (if left /=[] then head left else '0') == '*' = Mu
 --parseStr str = runParser  (expression) str
 --https://oliverbalfour.github.io/haskell/2020/08/09/parsing-arithmetic-with-monads.html
 
-main :: IO ()
-main   = do putStrLn "---------------------------WELCOME---------------------------"
-            putStrLn "-------------------------------------------------------------"
-            putStrLn "Polinomials must be circle by parentheses."
-            putStrLn "examples: dx(x^1)*(4x+1)+(2)"
-            putStrLn "          (4x^5y)*(5x^2)"
-            putStrLn "          {(x^3) + (x^3+3)}*{(4x+1)+(2)} -- todo"
 
-            interact (  unlines . map (poliParseToStr . normPoli . eval . parseStr) . lines )
+-- main = print(words "x^2 + 1")
+
+
+--main :: IO ()
+--main   = do putStrLn "---------------------------WELCOME---------------------------"
+--            putStrLn "-------------------------------------------------------------"
+--            putStrLn "Polinomials must be circle by parentheses."
+--            putStrLn "examples: dx(x^1)*(4x+1)+(2)"
+--            putStrLn "          (4x^5y)*(5x^2)"
+--            putStrLn "          {(x^3) + (x^3+3)}*{(4x+1)+(2)} -- todo"
+--
+--            interact (  unlines . map (poliParseToStr . normPoli . eval . parseStr) . lines )
             
 
 
