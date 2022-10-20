@@ -110,15 +110,23 @@ repl cs = let results = parse expr cs in
     num -> (poliParseToStr . normPoli . eval  $ (fst (num !! 0)))
 
 
+find_prev :: String -> String -> String
+find_prev "" _ = ""
+find_prev (x:xs) prev =  if x == '!' then ("(" ++ prev ++")") ++ find_prev xs prev  else [x] ++ find_prev xs prev
 
-main :: IO ()
-main = do  
+main_ :: String -> IO ()
+main_ prev = do  
     putStr "> "
     hFlush stdout
     line <- getLine 
+    -- previous_input <- line
     if line /= "exit"  then 
-            putStrLn (unlines (map repl (lines line))) >> main
+            putStrLn (unlines (map repl (lines (find_prev line prev)))) >> (main_ line)
     else return ()
+
+
+main :: IO ()
+main = main_ "0"
        
       --- TEM AQUI UM BUG ___ NO PoliPARSETOSTRG
 
