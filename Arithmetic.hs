@@ -181,7 +181,7 @@ main_test = check
 -- ghc Marco.hs && ghc Arithmetic.hs && clear && ./Arithmetic
 
 -- Para limpar ficheiros gerados:
--- rm *.hi *.dyn_hi *.o *.dyn_o
+-- rm -f *.hi *.dyn_hi *.o *.dyn_o
        
 -- Para correr testes:
 -- ghci Arithmetic.hs
