@@ -5,10 +5,13 @@ import Control.Applicative -- to use "instance Alternative Parser"
 import Arithmetics -- Program module
 import Data.Char
 
+-- stack ghc --package QuickCheck -- MyProgram.hs
+
 data Expr = Add Expr Expr
           | Mult Expr Expr
           | Poli Polinomio
           | Pow Expr Char -- NOT POW CHANGE LATER 
+          | Sub Expr Expr
           deriving (Eq, Show)
 
 eval :: Expr -> Polinomio 
@@ -16,6 +19,7 @@ eval (Poli n) = n
 eval (Add e1 e2) = sumPoli_ ((eval e1) ++ (eval e2))
 eval (Mult e1 e2) = multPoli (eval e1) (eval e2)
 eval (Pow e1 e2) = derivePoli (eval e1) e2
+eval (Sub e1 e2) = subPoli (eval e1) (eval e2)
 
 findValue :: (String, Int) -> (String, Int) 
 findValue ([], exp_) = ("", exp_)
@@ -52,21 +56,21 @@ parsePolo s =  [mono] ++ parsePolo toParseStr
 
 --parseMono (s:m) | isVar s = (m , Poli [((digitToInt $ s, []), "")])
 
-findMatchingParethesis :: String -> String
-findMatchingParethesis (')':m) = m
-findMatchingParethesis s = findMatchingParethesis $ tail s
-
-parseStr :: String -> Expr
-parseStr [] = Poli [((0, [0]), "")]
-parseStr ('d':var:'(':xs) | isLetter var && (if left /=[] then head left else '0') == '*' = Mult (Pow (Poli . parsePolo $ xs) var ) (parseStr $ left)
-                          | isLetter var && (if left /=[] then head left else '0') == '+' = Add (Pow (Poli . parsePolo $ xs) var ) (parseStr $ left)
-                          | otherwise = Pow (Poli . parsePolo $ xs) var
-                where left = findMatchingParethesis xs
-parseStr (x:xs) | x == '(' && (if left /=[] then head left else '0') == '*' = Mult (Poli . parsePolo $ xs) (parseStr $ left)
-                | x == '(' && (if left /=[] then head left else '0') == '+' = Add (Poli . parsePolo $ xs) (parseStr $ left)
-                | x == '(' = Add (Poli . parsePolo $ xs) (parseStr left)
-                | otherwise = parseStr xs
-                where left = findMatchingParethesis xs
+-- findMatchingParethesis :: String -> String
+-- findMatchingParethesis (')':m) = m
+-- findMatchingParethesis s = findMatchingParethesis $ tail s
+-- 
+-- parseStr :: String -> Expr
+-- parseStr [] = Poli [((0, [0]), "")]
+-- parseStr ('d':var:'(':xs) | isLetter var && (if left /=[] then head left else '0') == '*' = Mult (Pow (Poli . parsePolo $ xs) var ) (parseStr $ left)
+--                           | isLetter var && (if left /=[] then head left else '0') == '+' = Add (Pow (Poli . parsePolo $ xs) var ) (parseStr $ left)
+--                           | otherwise = Pow (Poli . parsePolo $ xs) var
+--                 where left = findMatchingParethesis xs
+-- parseStr (x:xs) | x == '(' && (if left /=[] then head left else '0') == '*' = Mult (Poli . parsePolo $ xs) (parseStr $ left)
+--                 | x == '(' && (if left /=[] then head left else '0') == '+' = Add (Poli . parsePolo $ xs) (parseStr $ left)
+--                 | x == '(' = Add (Poli . parsePolo $ xs) (parseStr left)
+--                 | otherwise = parseStr xs
+--                 where left = findMatchingParethesis xs
 
 newtype Parser a = Parser { parse :: String -> [(a, String)] }
 
@@ -121,20 +125,7 @@ mul :: Parser (Expr -> Expr -> Expr)
 mul = token "*" *> pure Mult
 
 add :: Parser (Expr -> Expr -> Expr)
-add = token "+" *> pure Add 
-
---derive :: Parser (Expr -> Char -> Expr)
---derive = (token "d")  *> pure Pow
-
--- integer :: Parser Int
--- integer = let positive = fmap read (some (satisfy isDigit))
---           in space *> unary_minus positive
-
---neg :: Parser Expr -> Parser Expr
---neg = Expr []
---
---unary_minus :: Parser Expr -> Parser Expr
---unary_minus p = char '-' *> fmap neg p<|> p
+add = token "+" *> pure Add <|> token "-" *> pure Sub
 
 chainl1 :: Parser a -> Parser (a -> a -> a) -> Parser a
 p `chainl1` op = p >>= rest
@@ -149,6 +140,7 @@ p `chainr1` op = p >>= rest
 ----------------------------
 parsePolo2 :: String -> Expr 
 parsePolo2 "" = Poli []
+parsePolo2 (' ':m) = parsePolo2 m 
 parsePolo2 (s:_) | s == ')' = Poli [] --- ver isto em mais detalhe para este caso do parser 
 parsePolo2 ('d':var:'(':xs) | isLetter var = Pow (Poli . parsePolo $ xs) var  -- ISTO N DEVIA BEM ESTAR AQUI
 parsePolo2 (s:s') | s == '-' = Poli ([((- (monoCoef mono), monoExp mono), monoVar mono)] ++ parsePolo toParseStr)

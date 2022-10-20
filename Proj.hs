@@ -5,6 +5,8 @@ import Parser
 
 -- Based on:
 -- https://oliverbalfour.github.io/haskell/2020/08/09/parsing-arithmetic-with-monads.html
+
+-- EU não me basiei no de baixo xD
 -- https://hackage.haskell.org/package/computational-algebra-0.0.1.1/docs/Algebra-Ring-Polynomial-Parser.html
 
 find_prev :: String -> String -> String

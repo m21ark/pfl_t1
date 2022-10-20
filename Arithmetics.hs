@@ -124,7 +124,8 @@ sumPoli_  (m1:ps)
 sumPoli :: Polinomio -> Polinomio -> Polinomio
 sumPoli p1 p2 = {- sumPoli $ parse $ -} p1 ++ p2
 
-
+subPoli :: Polinomio -> Polinomio -> Polinomio
+subPoli p1 p2 = sumPoli_ (p1 ++ (multPoli [((-1,[]),[])] p2))
 -- ====================================================== MULTIPLY ============================================================
 
 -- Aplica a distributiva entre cada par de monomios dos polinomios: (m1 + m2 + m3 ...) * (m'1 + m'2 + m'3 ...)
