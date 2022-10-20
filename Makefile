@@ -1,5 +1,5 @@
 all:
-	ghc Marco.hs && ghc Arithmetic.hs
+	ghc Marco.hs -Wall -Wextra && ghc Arithmetic.hs -Wall -Wextra
 
 run:
 	clear && ./Arithmetic

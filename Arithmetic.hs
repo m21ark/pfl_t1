@@ -1,5 +1,3 @@
---module Arithmetic where
-
 import Data.Char (isDigit, isSpace, isLetter)
 import Control.Applicative
 import Marco
@@ -8,47 +6,6 @@ import Prop_tests -- for QuickCheck Property Based Testing
 
 
 
--- ====================================================
-
-
-{-
-prop_associativity_sum :: Poly -> Poly -> Bool
-prop_associativity_sum p1 p2 = sum p1 p2 == sum p2 p1
-
-prop_null_element_sum :: Poly -> Bool
-prop_null_element_sum p1 = sum p1 (0,[]) == p1
-
-prop_associativity_mult :: Poly -> Poly -> Bool
-prop_associativity_mult p1 p2 = mult p1 p2 == mult p2 p1
-
-prop_null_element_mult :: Poly -> Bool
-prop_null_element_mult p1 = mult p1 (1,[]) == p1
-
-prop_coef_deriv :: Poly -> Bool
-prop_coef_deriv p1 = deriv (mult p1 (5,[])) == mult (5,[]) (deriv p1)
-
-prop_null_elem_deriv :: Poly -> Bool
-prop_null_elem_deriv = deriv ( p1 :: [(5,[])]) ==  deriv p1
-
-prop_sum_deriv :: Poly -> Poly -> Bool
-prop_sum_deriv p1 p2 = deriv (sum p1 p2) == sum (deriv p1) (deriv p2)
--}
-
-
-
-prop_reverse :: [Int] -> Bool
-prop_reverse xs = reverse (reverse xs) == xs
-
-
-
-
-
-
-
-
-
-
--- =======================================================
 
 newtype Parser a = Parser { parse :: String -> [(a, String)] }
 

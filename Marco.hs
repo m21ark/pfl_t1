@@ -1,28 +1,14 @@
--- Trabalho 1 PFL
-
-{- OBJETIVOS
-		        a) normalizar polinómios                        TO-DO
-		        b) adicionar polinómios                         DONE?
-		        c) multiplicar polinómios                       DONE?
-		        d) calcular a derivada de um polinómio	        DONE?
-		        e) parsing string <-> polinomios                HALF DONE -> FALTA STR -> POLI
--}
-
-{-  Ideias extras: (nao sei se valorizam...) --> perguntar ao stor cm funciona o metodo de avaliacao
-
-Adicionar exponencialização de polinomio
-permitir escolher derivada de n-esimo grau
-adicionar subtracoes
-
-
--}
 module Marco where
 
+-- import Prelude
 import Data.List -- to use splitAt
 import Data.Char -- to use ord
 import qualified Data.Map as Map
 import System.IO
 import Control.Applicative
+
+-- https://oliverbalfour.github.io/haskell/2020/08/09/parsing-arithmetic-with-monads.html
+-- https://hackage.haskell.org/package/computational-algebra-0.0.1.1/docs/Algebra-Ring-Polynomial-Parser.html
 
 -- replace item at pos N with nem ITEM in list LS
 replaceAtIndex :: Int -> a -> [a] -> [a]
@@ -343,43 +329,3 @@ parseStr (x:xs) | x == '(' && (if left /=[] then head left else '0') == '*' = Mu
                 | otherwise = parseStr xs
                 where left = findMatchingParethesis xs
 
-
--- parseStr :: String -> [Expr]
--- parseStr [] = []
--- parseStr (x:xs) | x == '(' && (if left /=[] then head left else '0') == '*' = [Mult (Poli . parsePolo $ xs) (head . parseStr $ left)] ++ parseStr left
---                 | x == '(' = [Poli . parsePolo $ xs] ++ (parseStr left)
---                 | otherwise = parseStr xs
---                 where left = findMatchingParethesis xs
---                 
-                                  
-
---parseStr str = runParser  (expression) str
---https://oliverbalfour.github.io/haskell/2020/08/09/parsing-arithmetic-with-monads.html
-
-
--- main = print(words "x^2 + 1")
-
-
---main :: IO ()
---main   = do putStrLn "---------------------------WELCOME---------------------------"
---            putStrLn "-------------------------------------------------------------"
---            putStrLn "Polinomials must be circle by parentheses."
---            putStrLn "examples: dx(x^1)*(4x+1)+(2)"
---            putStrLn "          (4x^5y)*(5x^2)"
---            putStrLn "          {(x^3) + (x^3+3)}*{(4x+1)+(2)} -- todo"
---
---            interact (  unlines . map (poliParseToStr . normPoli . eval . parseStr) . lines )
-            
-
-
-
--- Nota para ricardo: as funcoes a receber polinomios com coeficientes negativos estao a dar mas tem alguns bugs menores  
--- Tmb n estou a fazer mtas verificacoes de input pq acho q isso pode ficar na funcao de normalização e assumir apenas q 
--- input das funcoes ja vem normalizado (caso da soma é o mais critico estar td ordenadinho)
--- dps para fazer output fazemos outra normalizacao para garantir ficar td direito
--- input com parse de STR para Polinomio --> normalizar / verificar --> operacoes (precisam input normalizado) --> normalizar output again --> output com parse para STR
-
-
-
-
--- https://hackage.haskell.org/package/computational-algebra-0.0.1.1/docs/Algebra-Ring-Polynomial-Parser.html
