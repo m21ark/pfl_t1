@@ -3,6 +3,7 @@
 import Data.Char (isDigit, isSpace, isLetter)
 import Control.Applicative
 import Marco
+import System.IO
 
 newtype Parser a = Parser { parse :: String -> [(a, String)] }
 
@@ -106,11 +107,18 @@ repl :: String -> String
 repl cs = let results = parse expr cs in
   case results of
     [] -> "Invalid expression"
-    num -> poliParseToStr . normPoli . eval  $ (fst (num !! 0)) 
+    num -> (poliParseToStr . normPoli . eval  $ (fst (num !! 0)))
+
 
 
 main :: IO ()
-main = print (poliParseToStr (normPoli ( ( [((1, [2]),"x"), ((1, []),"")])  ))) >> interact (unlines . map repl . lines)
+main = do  
+    putStr "> "
+    hFlush stdout
+    line <- getLine 
+    if line /= "exit"  then 
+            putStrLn (unlines (map repl (lines line))) >> main
+    else return ()
        
       --- TEM AQUI UM BUG ___ NO PoliPARSETOSTRG
 
