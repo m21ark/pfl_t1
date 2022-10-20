@@ -92,8 +92,8 @@ monoParseToStr::  Monomio -> String
 monoParseToStr m =  coefShow  ++ (if together /= "ç^0" then together else "")
     where
         aux = zip (monoExp m) (monoVar m)
-        together =  concat $ intersperse "*" [[var] ++ expShow exp | (exp, var) <- aux , exp /= 0 ]
-        expShow exp = (if exp /= 1 then "^" ++ show exp else "")
+        together =  concat $ intersperse "*" [[var] ++ expShow exp_ | (exp_, var) <- aux , exp_ /= 0 ]
+        expShow exp_ = (if exp_ /= 1 then "^" ++ show exp_ else "")
         coefShow = (if ((monoCoef m) /= 1) || ((null (monoVar m))) then show (monoCoef m) else "")
 
 
@@ -135,11 +135,11 @@ multPoli p1 p2 = [multMono (p1!!x) (p2!!y) | (x,y)<-genPairs]
 
 -- Multiplica dois monomios
 multMono :: Monomio -> Monomio -> Monomio
-multMono m1 m2 =  ((coef, exp), vars)
+multMono m1 m2 =  ((coef, exp_), vars)
     where
         coef = (monoCoef m1) * (monoCoef m2)
         vars = rmvdups $ (monoVar m1) ++ (monoVar m2)
-        exp = [(findVarExp c m1) + (findVarExp c m2) | c <- vars ] -- ((5,[2,3]),"xy") ((7,[2,5]),"yz") 
+        exp_ = [(findVarExp c m1) + (findVarExp c m2) | c <- vars ] -- ((5,[2,3]),"xy") ((7,[2,5]),"yz") 
         findVarExp c m = sum [e | (v,e) <- aux , v == c] 
             where aux = zip (monoVar m) (monoExp m)
 
@@ -158,11 +158,11 @@ deriver m dx = if monoContainsVar m dx then deriveMono m dx else ((0,[1]),"ç") 
 -- isto ja assume q monomio esta normalizado ent pode falhar se n estiver na forma C * X^a * Y^b ...
 -- Deriva monomio --> esta funcao esta um pouco confusa mas da para simplificar consideravelmente dps
 deriveMono :: Monomio -> Char -> Monomio
-deriveMono m dx = (((monoCoef m) * exp, exponents), (monoVar m))
+deriveMono m dx = (((monoCoef m) * exp_, exponents), (monoVar m))
     where
         aux = zip (monoVar m) (monoExp m) -- (var, exp)
         aux2 =  (zip [0..] aux) -- (index, (var, exp))
         auxElem = foldr auxFunc (-1, (' ',-1)) aux2
         auxFunc e acc = if (fst (snd e)) == dx then e else acc -- procura o elemento com as infos uteis
-        (index, exp) = (fst auxElem, snd (snd auxElem)) -- index e expoente atual da derivada em questao
-        exponents = replaceAtIndex index (exp - 1) (monoExp m) -- reduz expoente da derivada em questao
+        (index, exp_) = (fst auxElem, snd (snd auxElem)) -- index e expoente atual da derivada em questao
+        exponents = replaceAtIndex index (exp_ - 1) (monoExp m) -- reduz expoente da derivada em questao

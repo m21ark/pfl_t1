@@ -3,7 +3,7 @@ import System.IO -- to use output flush
 import Prop_tests -- for QuickCheck Property Based Testing
 import Parser
 
--- Based on
+-- Based on:
 -- https://oliverbalfour.github.io/haskell/2020/08/09/parsing-arithmetic-with-monads.html
 -- https://hackage.haskell.org/package/computational-algebra-0.0.1.1/docs/Algebra-Ring-Polynomial-Parser.html
 
@@ -21,10 +21,11 @@ main_ prev = do
             putStrLn (unlines (map repl (lines (find_prev line prev)))) >> (main_ line)
     else return ()
 
--- Main code call
-main :: IO ()
-main = main_ "0"
 
 -- For QuickCheck Property Based Testing
 main_test :: IO Bool
 main_test = check
+
+-- Main code call
+main :: IO ()
+main = main_test >> main_ "0"

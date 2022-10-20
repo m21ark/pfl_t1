@@ -40,5 +40,6 @@ prop_const_deriv p1 c =  if (not (valid_poli p1)) || (not (elem c (concat (map m
 
 -- End of testing file
 return []
+check :: IO Bool
 check = $quickCheckAll
 

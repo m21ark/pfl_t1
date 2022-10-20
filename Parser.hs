@@ -17,11 +17,10 @@ eval (Add e1 e2) = sumPoli_ ((eval e1) ++ (eval e2))
 eval (Mult e1 e2) = multPoli (eval e1) (eval e2)
 eval (Pow e1 e2) = derivePoli (eval e1) e2
 
-
 findValue :: (String, Int) -> (String, Int) 
-findValue ([], exp) = ("", exp)
-findValue (x:xs, exp) | isDigit x = findValue (xs, exp * 10 + digitToInt x)
-                      | otherwise = (x:xs, exp)
+findValue ([], exp_) = ("", exp_)
+findValue (x:xs, exp_) | isDigit x = findValue (xs, exp_ * 10 + digitToInt x)
+                      | otherwise = (x:xs, exp_)
 
 parseMono :: (String, Monomio) -> (String, Monomio)
 parseMono ([], monomio) = ("", monomio)
@@ -42,10 +41,9 @@ parseMono ('-':m, a) = ('-':m , a)
 parseMono (')':m, a) = (')':m, a)
 
 
-
 parsePolo :: String -> Polinomio
 parsePolo "" = []
-parsePolo (s:s') | s == ')' = []
+parsePolo (s:_) | s == ')' = []
 parsePolo (s:s') | s == '-' = [((- (monoCoef mono), monoExp mono), monoVar mono)] ++ parsePolo toParseStr
                 where (toParseStr, mono) = parseMono (s', ((1, []), "")) -- é preciso meter o numero depois do -
 parsePolo s =  [mono] ++ parsePolo toParseStr
@@ -56,7 +54,7 @@ parsePolo s =  [mono] ++ parsePolo toParseStr
 
 findMatchingParethesis :: String -> String
 findMatchingParethesis (')':m) = m
-findMatchingParethesis (s:m) = findMatchingParethesis m
+findMatchingParethesis s = findMatchingParethesis $ tail s
 
 parseStr :: String -> Expr
 parseStr [] = Poli [((0, [0]), "")]
@@ -78,7 +76,7 @@ item = Parser (\cs -> case cs of
   (c:cs) -> [(c,cs)])
 
 satisfy :: (Char -> Bool) -> Parser Char
-satisfy pred = item >>= (\c -> if pred c then pure c else empty)
+satisfy pred_ = item >>= (\c -> if pred_ c then pure c else empty)
 
 char :: Char -> Parser Char
 char c = satisfy (== c)
@@ -151,24 +149,22 @@ p `chainr1` op = p >>= rest
 ----------------------------
 parsePolo2 :: String -> Expr 
 parsePolo2 "" = Poli []
-parsePolo2 (s:s') | s == ')' = Poli [] --- ver isto em mais detalhe para este caso do parser 
+parsePolo2 (s:_) | s == ')' = Poli [] --- ver isto em mais detalhe para este caso do parser 
 parsePolo2 ('d':var:'(':xs) | isLetter var = Pow (Poli . parsePolo $ xs) var  -- ISTO N DEVIA BEM ESTAR AQUI
 parsePolo2 (s:s') | s == '-' = Poli ([((- (monoCoef mono), monoExp mono), monoVar mono)] ++ parsePolo toParseStr)
                 where (toParseStr, mono) = parseMono (s', ((1, []), "")) -- é preciso meter o numero depois do - VER A NOTA ACIMA. O PARSING PODE SER UTILIZADO AQUI 
 parsePolo2 s =  Poli ([mono] ++ parsePolo toParseStr)
                 where (toParseStr, mono) = parseMono (s, ((1, []), ""))
 
-
-
 polinomio :: Parser Expr
 polinomio = space *> fmap parsePolo2 (some (satisfy isMono))
 --polinomio = let positive = fmap read (some (satisfy isMono))
 --          in space *> unary_minus positive
 
---expr :: Parser Expr
+expr :: Parser Expr
 expr = subexpr  `chainl1` mul `chainl1` add --`chainr1` derive 
 
---subexpr :: Polinomio
+subexpr :: Parser Expr
 subexpr = token "(" *> expr <* token ")" <|> polinomio
 
 repl :: String -> String
