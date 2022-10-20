@@ -3,10 +3,13 @@
 module Prop_tests where
 
 import Test.QuickCheck
-import Marco
+import Arithmetics
 
 -- Auxiliar funcs for testing
+valid_mono :: Monomio -> Bool
 valid_mono m = (length (monoVar m)) == (length (monoExp m))  && (length (monoExp m)) > 0
+
+valid_poli :: Polinomio -> Bool
 valid_poli p = and $ map valid_mono p
 
 -- ================================================== SUM ==================================================

@@ -1,4 +1,4 @@
-module Marco where
+module Arithmetics where
 
 -- import Prelude
 import Data.List -- to use splitAt

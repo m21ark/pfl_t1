@@ -1,11 +1,8 @@
 import Data.Char (isDigit, isSpace, isLetter)
 import Control.Applicative
-import Marco
+import Arithmetics
 import System.IO -- apenas pra flush do output
 import Prop_tests -- for QuickCheck Property Based Testing
-
-
-
 
 newtype Parser a = Parser { parse :: String -> [(a, String)] }
 

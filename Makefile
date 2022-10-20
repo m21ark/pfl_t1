@@ -1,11 +1,11 @@
 all:
-	ghc Marco.hs -Wall -Wextra && ghc Arithmetic.hs -Wall -Wextra
+	ghc Arithmetics.hs -Wall -Wextra && ghc Proj.hs -Wall -Wextra
 
 run:
-	clear && ./Arithmetic
+	clear && ./Proj
 
 check:
-	 echo "check" |  ghci Arithmetic.hs
+	 echo "check" |  ghci Proj.hs
 	
 clean:
-	rm -f *.hi *.dyn_hi *.o *.dyn_o Arithmetic
+	rm -f *.hi *.dyn_hi *.o *.dyn_o Proj
