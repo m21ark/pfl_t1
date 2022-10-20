@@ -154,7 +154,7 @@ monoParseToStr m =  coefShow  ++ (if together /= "ç^0" then together else "")
         aux = zip (monoExp m) (monoVar m)
         together =  concat $ intersperse "*" [[var] ++ expShow exp | (exp, var) <- aux , exp /= 0 ]
         expShow exp = (if exp /= 1 then "^" ++ show exp else "")
-        coefShow = (if (monoCoef m) /= 1 then show (monoCoef m) else "")
+        coefShow = (if ((monoCoef m) /= 1) || ((null (monoVar m))) then show (monoCoef m) else "")
 
 
 -- ====================================================== SUM POLIS ============================================================
