@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Prop_tests where
+module Prop_tests where -- 
 
 import Test.QuickCheck
 import Arithmetics

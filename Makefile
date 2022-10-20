@@ -1,5 +1,5 @@
 all:
-	ghc Arithmetics.hs -Wall -Wextra && ghc Proj.hs -Wall -Wextra
+	ghc *.hs -Wall -Wextra && rm -f *.hi *.dyn_hi *.o *.dyn_o
 
 run:
 	clear && ./Proj
