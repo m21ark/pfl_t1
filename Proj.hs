@@ -19,6 +19,8 @@ main_ prev = do
     hFlush stdout
     line <- getLine 
     putStrLn prev
+    putStrLn (find_prev line prev) 
+    -- NOTA : O facto de termos varios () no ! pode piorar o desempenho 
     if line /= "exit"  then 
             let previous_l = find_prev line prev in putStrLn (unlines (map repl (lines (previous_l)))) >> (main_ previous_l)
     else return ()
