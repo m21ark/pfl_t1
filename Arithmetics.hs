@@ -1,3 +1,4 @@
+{-# LANGUAGE Safe #-}
 module Arithmetics where -- Este ficheiro contem as funções de Normalizar, Somar, Multiplicar, Derivar polinomios
 
 import Data.List -- to use splitAt, interspace
@@ -48,6 +49,8 @@ noZeroExp p = [((fst (fst x), fst y), snd y) | x <- p, let y = cleanZeroExp (snd
 -- Verifica o tamanho dos expoentes nos monomios
 checkGreaterExp :: [Int] -> [Int] -> Bool
 checkGreaterExp [] [] = False
+checkGreaterExp _ [] = True
+checkGreaterExp [] _ = False
 checkGreaterExp (x:xs) (y:ys) | x <  y = False
                               | x >  y = True
                               | otherwise = checkGreaterExp xs ys

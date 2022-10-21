@@ -1,6 +1,8 @@
+{-# LANGUAGE Safe #-}
+
 module Parser where -- Ficheiro responsável pelo parsing do input para estrutura interna: String -> Polinomio
 
-import Data.Char (isDigit, isSpace, isLetter)
+import Data.Char()
 import Control.Applicative -- to use "instance Alternative Parser"
 import Arithmetics -- Program module
 import Data.Char
@@ -66,6 +68,7 @@ parseMono (' ':m, a) = parseMono (m, a)
 parseMono ('+':m, a) = (m , a)
 parseMono ('-':m, a) = ('-':m , a)
 parseMono (')':m, a) = (')':m, a)
+parseMono (_, _) = error "Invalid Char present in input"
 
 
 parsePolo :: String -> Polinomio
@@ -79,7 +82,7 @@ parsePolo s =  [mono] ++ parsePolo toParseStr
 item :: Parser Char
 item = Parser (\cs -> case cs of
   "" -> []
-  (c:cs) -> [(c,cs)])
+  (c:c') -> [(c,c')])
 
 satisfy :: (Char -> Bool) -> Parser Char
 satisfy pred_ = item >>= (\c -> if pred_ c then pure c else empty)
