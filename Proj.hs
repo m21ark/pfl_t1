@@ -18,9 +18,9 @@ main_ prev = do
     putStr "> "
     hFlush stdout
     line <- getLine 
-    -- previous_input <- line
+    putStrLn prev
     if line /= "exit"  then 
-            putStrLn (unlines (map repl (lines (find_prev line prev)))) >> (main_ line)
+            let previous_l = find_prev line prev in putStrLn (unlines (map repl (lines (previous_l)))) >> (main_ previous_l)
     else return ()
 
 
