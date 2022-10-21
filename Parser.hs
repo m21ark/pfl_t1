@@ -95,7 +95,7 @@ char :: Char -> Parser Char
 char c = satisfy (== c)
 
 isPoli :: Char -> Bool
-isPoli x = isDigit x || isLetter x || '^' == x || '-' == x  || ' ' == x  
+isPoli x = isDigit x || isLetter x || '^' == x  || ' ' == x  
 
 space :: Parser String
 space = many (satisfy isSpace)
@@ -142,18 +142,12 @@ parsePolo2 s =  Poli $ normPoli ([mono] ++ parsePolo toParseStr)
 
 polinomio :: Parser Expr
 polinomio = space *> fmap parsePolo2 (some (satisfy isPoli))
-
--- isDerivative :: Char -> Bool
--- isDerivative c = c == 'd' || isLetter c || isPoli c || '+' == c || '(' == c || ')' == c 
--- 
--- derivative :: Parser Expr
--- derivative = space *> fmap parsePolo2 (some (satisfy isDerivative))
  
 expr :: Parser Expr
 expr = subexpr `chainl1` derive `chainl1` mul `chainl1` add   
 
 subexpr :: Parser Expr
-subexpr = token "(" *> expr <* token ")" <|> polinomio -- <|> token "d" *> expr <* token ")"
+subexpr = token "(" *> expr <* token ")" <|> polinomio
 
 repl :: String -> String
 repl cs = let results = parse expr cs in
