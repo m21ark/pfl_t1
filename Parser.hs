@@ -71,11 +71,8 @@ parseMono (_, _) = error "Invalid Char present in input"
 
 
 parsePolo :: String -> Polinomio
-parsePolo "" = []
-parsePolo (' ':m) = parsePolo m 
+parsePolo "" = [] 
 parsePolo (s:s') | s == ')' = parsePolo s'
-parsePolo (s:s') | s == '-' = normPoli ([((- (monoCoef mono), monoExp mono), monoVar mono)] ++ parsePolo toParseStr)
-                where (toParseStr, mono) = parseMono (s', ((1, []), "")) 
 parsePolo s =  normPoli ([mono] ++ parsePolo toParseStr)
                 where (toParseStr, mono) = parseMono (s, ((1, []), ""))
 
@@ -91,7 +88,7 @@ char :: Char -> Parser Char
 char c = satisfy (== c)
 
 isPoli :: Char -> Bool
-isPoli x = isDigit x || isLetter x || '^' == x  || ' ' == x  
+isPoli x = isDigit x || isLetter x || '^' == x 
 
 space :: Parser String
 space = many (satisfy isSpace)
@@ -118,10 +115,7 @@ p `chainl1` op = p >>= rest
 
 parseExpr :: String -> Expr 
 parseExpr "" = Poli []
-parseExpr (' ':m) = parseExpr m -- talvez tirar o espaçoes do isPoli
 parseExpr (s:s') | s == ')' = Poli $ normPoli $ parsePolo $ s'
-parseExpr (s:s') | s == '-' = Poli $ normPoli ([((- (monoCoef mono), monoExp mono), monoVar mono)] ++ parsePolo toParseStr)
-                where (toParseStr, mono) = parseMono (s', ((1, []), "")) 
 parseExpr s =  Poli $ normPoli ([mono] ++ parsePolo toParseStr)
                 where (toParseStr, mono) = parseMono (s, ((1, []), ""))
 
