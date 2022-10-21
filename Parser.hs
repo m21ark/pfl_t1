@@ -14,6 +14,29 @@ data Expr = Add Expr Expr
           | Sub Expr Expr
           deriving (Eq, Show)
 
+
+newtype Parser a = Parser { parse :: String -> [(a, String)] }
+
+instance Functor Parser where
+  fmap f (Parser p) = Parser (\cs ->
+    map (\(x, cs') -> (f x, cs')) (p cs))
+
+instance Applicative Parser where
+  pure x = Parser (\cs -> [(x, cs)])
+  f <*> a = Parser (\cs ->
+    concat [parse (fmap fn a) cs' | (fn, cs') <- parse f cs])
+
+instance Monad Parser where
+  return = pure
+  p >>= f = Parser (\cs ->
+    concat [parse (f a) cs' | (a, cs') <- parse p cs])
+
+instance Alternative Parser where
+  empty = Parser (\_ -> [])
+  p <|> q = Parser (\cs ->
+    let (p', q') = (parse p cs, parse q cs) in
+    if length p' > 0 then p' else q')
+
 eval :: Expr -> Polinomio 
 eval (Poli n) = n
 eval (Add e1 e2) = sumPoli_ ((eval e1) ++ (eval e2))
@@ -53,27 +76,6 @@ parsePolo (s:s') | s == '-' = [((- (monoCoef mono), monoExp mono), monoVar mono)
 parsePolo s =  [mono] ++ parsePolo toParseStr
                 where (toParseStr, mono) = parseMono (s, ((1, []), ""))
 
-
---parseMono (s:m) | isVar s = (m , Poli [((digitToInt $ s, []), "")])
-
--- findMatchingParethesis :: String -> String
--- findMatchingParethesis (')':m) = m
--- findMatchingParethesis s = findMatchingParethesis $ tail s
--- 
--- parseStr :: String -> Expr
--- parseStr [] = Poli [((0, [0]), "")]
--- parseStr ('d':var:'(':xs) | isLetter var && (if left /=[] then head left else '0') == '*' = Mult (Pow (Poli . parsePolo $ xs) var ) (parseStr $ left)
---                           | isLetter var && (if left /=[] then head left else '0') == '+' = Add (Pow (Poli . parsePolo $ xs) var ) (parseStr $ left)
---                           | otherwise = Pow (Poli . parsePolo $ xs) var
---                 where left = findMatchingParethesis xs
--- parseStr (x:xs) | x == '(' && (if left /=[] then head left else '0') == '*' = Mult (Poli . parsePolo $ xs) (parseStr $ left)
---                 | x == '(' && (if left /=[] then head left else '0') == '+' = Add (Poli . parsePolo $ xs) (parseStr $ left)
---                 | x == '(' = Add (Poli . parsePolo $ xs) (parseStr left)
---                 | otherwise = parseStr xs
---                 where left = findMatchingParethesis xs
-
-newtype Parser a = Parser { parse :: String -> [(a, String)] }
-
 item :: Parser Char
 item = Parser (\cs -> case cs of
   "" -> []
@@ -85,31 +87,11 @@ satisfy pred_ = item >>= (\c -> if pred_ c then pure c else empty)
 char :: Char -> Parser Char
 char c = satisfy (== c)
 
-instance Functor Parser where
-  fmap f (Parser p) = Parser (\cs ->
-    map (\(x, cs') -> (f x, cs')) (p cs))
-
 isMono :: Char -> Bool
-isMono x = isDigit x || isLetter x || '^' == x || '(' == x || '-' == x || '*'  == x 
+isMono x = isDigit x || isLetter x || '^' == x || '(' == x || '-' == x || '*'  == x || ' ' == x
 
 digit :: Parser Int
 digit = fmap (read . (:[])) (satisfy isDigit)
-
-instance Applicative Parser where
-  pure x = Parser (\cs -> [(x, cs)])
-  f <*> a = Parser (\cs ->
-    concat [parse (fmap fn a) cs' | (fn, cs') <- parse f cs])
-
-instance Monad Parser where
-  return = pure
-  p >>= f = Parser (\cs ->
-    concat [parse (f a) cs' | (a, cs') <- parse p cs])
-
-instance Alternative Parser where
-  empty = Parser (\_ -> [])
-  p <|> q = Parser (\cs ->
-    let (p', q') = (parse p cs, parse q cs) in
-    if length p' > 0 then p' else q')
 
 space :: Parser String
 space = many (satisfy isSpace)
