@@ -68,11 +68,13 @@ parseMono (' ':m, a) = parseMono (m, a)
 parseMono ('+':m, a) = (m , a)
 parseMono ('-':m, a) = ('-':m , a)
 parseMono (')':m, a) = (')':m, a)
+parseMono ('(':m, a) = (m, a)
 parseMono (_, _) = error "Invalid Char present in input"
 
 
 parsePolo :: String -> Polinomio
 parsePolo "" = []
+parsePolo (' ':m) = parsePolo m 
 parsePolo (s:_) | s == ')' = []
 parsePolo (s:s') | s == '-' = [((- (monoCoef mono), monoExp mono), monoVar mono)] ++ parsePolo toParseStr
                 where (toParseStr, mono) = parseMono (s', ((1, []), "")) -- é preciso meter o numero depois do -
@@ -92,9 +94,6 @@ char c = satisfy (== c)
 
 isPoli :: Char -> Bool
 isPoli x = isDigit x || isLetter x || '^' == x || '(' == x || '-' == x || '*'  == x || ' ' == x || '+' == x 
-
-digit :: Parser Int
-digit = fmap (read . (:[])) (satisfy isDigit)
 
 space :: Parser String
 space = many (satisfy isSpace)
@@ -116,10 +115,6 @@ chainl1 :: Parser a -> Parser (a -> a -> a) -> Parser a
 p `chainl1` op = p >>= rest
   where rest a = ((op <*> pure a <*> p) >>= rest)  <|> return a
 
-chainr1 :: Parser a -> Parser (a -> a -> a) -> Parser a
-p `chainr1` op = p >>= rest
-  where rest a =  (op <*> pure a <*> (p >>= rest)) <|> return a
-
 ----------------------------
 -- Este código está um pouco sujo. Talvez tentar usar mais monads, parece ser mais simples de se ler.  
 ----------------------------
@@ -127,19 +122,17 @@ parsePolo2 :: String -> Expr
 parsePolo2 "" = Poli []
 parsePolo2 (' ':m) = parsePolo2 m 
 parsePolo2 (s:_) | s == ')' = Poli [] --- ver isto em mais detalhe para este caso do parser 
-parsePolo2 ('d':var:'(':xs) | isLetter var = Pow (Poli . parsePolo $ xs) var  -- ISTO N DEVIA BEM ESTAR AQUI
+parsePolo2 ('d':var:'(':xs) | isLetter var = Pow (fst((parse polinomio xs)!!0)) var  -- ISTO N DEVIA BEM ESTAR AQUI
 parsePolo2 (s:s') | s == '-' = Poli ([((- (monoCoef mono), monoExp mono), monoVar mono)] ++ parsePolo toParseStr)
-                where (toParseStr, mono) = parseMono (s', ((1, []), "")) -- é preciso meter o numero depois do - VER A NOTA ACIMA. O PARSING PODE SER UTILIZADO AQUI 
+                where (toParseStr, mono) = parseMono (s', ((1, []), "")) 
 parsePolo2 s =  Poli ([mono] ++ parsePolo toParseStr)
                 where (toParseStr, mono) = parseMono (s, ((1, []), ""))
 
 polinomio :: Parser Expr
 polinomio = space *> fmap parsePolo2 (some (satisfy isPoli))
---polinomio = let positive = fmap read (some (satisfy isMono))
---          in space *> unary_minus positive
 
 expr :: Parser Expr
-expr = subexpr  `chainl1` mul `chainl1` add --`chainr1` derive 
+expr = subexpr  `chainl1` mul `chainl1` add 
 
 subexpr :: Parser Expr
 subexpr = token "(" *> expr <* token ")" <|> polinomio
