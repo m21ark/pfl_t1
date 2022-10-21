@@ -87,8 +87,8 @@ satisfy pred_ = item >>= (\c -> if pred_ c then pure c else empty)
 char :: Char -> Parser Char
 char c = satisfy (== c)
 
-isMono :: Char -> Bool
-isMono x = isDigit x || isLetter x || '^' == x || '(' == x || '-' == x || '*'  == x || ' ' == x
+isPoli :: Char -> Bool
+isPoli x = isDigit x || isLetter x || '^' == x || '(' == x || '-' == x || '*'  == x || ' ' == x || '+' == x 
 
 digit :: Parser Int
 digit = fmap (read . (:[])) (satisfy isDigit)
@@ -131,7 +131,7 @@ parsePolo2 s =  Poli ([mono] ++ parsePolo toParseStr)
                 where (toParseStr, mono) = parseMono (s, ((1, []), ""))
 
 polinomio :: Parser Expr
-polinomio = space *> fmap parsePolo2 (some (satisfy isMono))
+polinomio = space *> fmap parsePolo2 (some (satisfy isPoli))
 --polinomio = let positive = fmap read (some (satisfy isMono))
 --          in space *> unary_minus positive
 
