@@ -7,29 +7,31 @@ import Control.Applicative -- to use "instance Alternative Parser"
 import Arithmetics -- Program module
 import Data.Char
 
--- stack ghc --package QuickCheck -- MyProgram.hs
-
 data Expr = Add Expr Expr
           | Mult Expr Expr
           | Poli Polinomio
-          | Pow Expr Expr-- NOT POW CHANGE LATER 
+          | Derive Expr Expr-- NOT POW CHANGE LATER 
           | Sub Expr Expr
           deriving (Eq)
 
+-- | Show a representation of an evaluated expression in the form of a normalised Polinomial
 instance Show Expr where
   show x = poliParseToStr . normPoli . eval $ x
 
 newtype Parser a = Parser { parse :: String -> [(a, String)] }
 
+-- | Defines a functor for the Parser. This applies the funcion f to the first argument of (a, String), a, for each (a, String)
 instance Functor Parser where
   fmap f (Parser p) = Parser (\cs ->
     map (\(x, cs') -> (f x, cs')) (p cs))
 
+-- | Defines an Applicative for the Parser. It gives a list of (function, string) pairs, using fmap to apply the function and calling the modified parser with the remaining string 
 instance Applicative Parser where
   pure x = Parser (\cs -> [(x, cs)])
   f <*> a = Parser (\cs ->
     concat [parse (fmap fn a) cs' | (fn, cs') <- parse f cs])
 
+-- | Defines a Monad for the Parser. It applies the funcion f to the each unwrapped argument produced by the previous parser.
 instance Monad Parser where
   return = pure
   p >>= f = Parser (\cs ->
@@ -45,7 +47,7 @@ eval :: Expr -> Polinomio
 eval (Poli n) = n
 eval (Add e1 e2) = sumPoli_ ((eval e1) ++ (eval e2))
 eval (Mult e1 e2) = multPoli (eval e1) (eval e2)
-eval (Pow e1 e2) = derivePoli (eval e1) (monoVar ((eval e2) !! 0) !! 0)
+eval (Derive e1 e2) = derivePoli (eval e1) (monoVar ((eval e2) !! 0) !! 0)
 eval (Sub e1 e2) = subPoli (eval e1) (eval e2)
 
 findValue :: (String, Int) -> (String, Int) 
@@ -65,12 +67,6 @@ parseMono (s:o:m, mono) | isLetter s && o == '^' = parseMono (left, ((monoCoef m
                               exps = snd r
                               left = fst r
 parseMono (s:m, mono) | isLetter s = parseMono (m, ((monoCoef mono, monoExp mono ++ [1]), monoVar mono ++ [s])) 
-parseMono ('*':m, a) = parseMono (m, a)
-parseMono (' ':m, a) = parseMono (m, a)
-parseMono ('+':m, a) = (m , a)
-parseMono ('-':m, a) = ('-':m , a)
-parseMono (')':m, a) = (')':m, a)
-parseMono ('(':m, a) = parseMono (m, a)
 parseMono (_, _) = error "Invalid Char present in input"
 
 
@@ -79,7 +75,7 @@ parsePolo "" = []
 parsePolo (' ':m) = parsePolo m 
 parsePolo (s:s') | s == ')' = parsePolo s'
 parsePolo (s:s') | s == '-' = normPoli ([((- (monoCoef mono), monoExp mono), monoVar mono)] ++ parsePolo toParseStr)
-                where (toParseStr, mono) = parseMono (s', ((1, []), "")) -- é preciso meter o numero depois do -
+                where (toParseStr, mono) = parseMono (s', ((1, []), "")) 
 parsePolo s =  normPoli ([mono] ++ parsePolo toParseStr)
                 where (toParseStr, mono) = parseMono (s, ((1, []), ""))
 
@@ -114,34 +110,23 @@ add :: Parser (Expr -> Expr -> Expr)
 add = token "+" *> pure Add <|> token "-" *> pure Sub
 
 derive :: Parser (Expr -> Expr -> Expr)
-derive = token "'" *> pure Pow
+derive = token "'" *> pure Derive
 
 chainl1 :: Parser a -> Parser (a -> a -> a) -> Parser a
 p `chainl1` op = p >>= rest
   where rest a = ((op <*> pure a <*> p) >>= rest)  <|> return a
 
-----------------------------
--- Este código está um pouco sujo. Talvez tentar usar mais monads, parece ser mais simples de se ler.  
-----------------------------
-findClosingParenthesis :: (String, Int) -> String 
-findClosingParenthesis ("", _) = ""
-findClosingParenthesis ((x:xs), i) | x == ')' && i == 1 = [x]
-                                   | x == '(' = [x] ++ findClosingParenthesis (xs, i + 1)
-                                   | x == ')' = [x] ++ findClosingParenthesis (xs, i - 1)
-                                   | otherwise = [x] ++ findClosingParenthesis (xs, i)
-
-parsePolo2 :: String -> Expr 
-parsePolo2 "" = Poli []
-parsePolo2 (' ':m) = parsePolo2 m 
-parsePolo2 (s:s') | s == ')' = Poli $ normPoli $ parsePolo $ s' --- ver isto em mais detalhe para este caso do parser 
--- parsePolo2 (var:'(':xs) | isLetter var = Pow (fst((parse expr (findClosingParenthesis (xs, 1)))!!0)) var  -- ISTO N DEVIA BEM ESTAR AQUI
-parsePolo2 (s:s') | s == '-' = Poli $ normPoli ([((- (monoCoef mono), monoExp mono), monoVar mono)] ++ parsePolo toParseStr)
+parseExpr :: String -> Expr 
+parseExpr "" = Poli []
+parseExpr (' ':m) = parseExpr m -- talvez tirar o espaçoes do isPoli
+parseExpr (s:s') | s == ')' = Poli $ normPoli $ parsePolo $ s'
+parseExpr (s:s') | s == '-' = Poli $ normPoli ([((- (monoCoef mono), monoExp mono), monoVar mono)] ++ parsePolo toParseStr)
                 where (toParseStr, mono) = parseMono (s', ((1, []), "")) 
-parsePolo2 s =  Poli $ normPoli ([mono] ++ parsePolo toParseStr)
+parseExpr s =  Poli $ normPoli ([mono] ++ parsePolo toParseStr)
                 where (toParseStr, mono) = parseMono (s, ((1, []), ""))
 
 polinomio :: Parser Expr
-polinomio = space *> fmap parsePolo2 (some (satisfy isPoli))
+polinomio = space *> fmap parseExpr (some (satisfy isPoli))
  
 expr :: Parser Expr
 expr = subexpr `chainl1` derive `chainl1` mul `chainl1` add   
