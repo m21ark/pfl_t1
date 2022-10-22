@@ -60,7 +60,9 @@ findValue ([], exp_) = ("", exp_)
 findValue (x:xs, exp_) | isDigit x = findValue (xs, exp_ * 10 + digitToInt x)
                       | otherwise = (x:xs, exp_)
 
-parseMono :: (String, Monomio) -> (String, Monomio)
+-- | Parses a String representation of a monomial and returns the curresponding polinomio. This is bit of a naive implementation as it comes from our first not so great parser
+parseMono :: (String, Monomio) -- ^ The string yet to be parsed and a monomial
+          -> (String, Monomio) -- ^ The result of evaluating the next argument
 parseMono ([], monomio) = ("", monomio)
 parseMono (s:m, mono) | isDigit s = parseMono (left , ((monoCoef mono * coef, monoExp mono), monoVar mono))
                         where r = findValue (m, digitToInt s)
