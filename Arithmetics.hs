@@ -108,6 +108,8 @@ normPoli :: Polinomio -- ^ list of monomios
          -> Polinomio -- ^ normalised list of monomios
 normPoli p =   sumPoli_ . (sortBy monoSort) . noZeroExp . noZeroCoef $ [normaliseVars . monoSortVars $ x | x <- p]
 
+-- =============================================== PARSING TO STRING =====================================================
+
 -- | Parses to string a polinomio representation
 poliParseToStr ::  Polinomio -- ^ polinomio
                -> String     -- ^ representation of a polinomio in string
@@ -166,6 +168,7 @@ subPoli :: Polinomio -- ^ Polinomio
         -> Polinomio -- ^ Polinomio
         -> Polinomio -- ^ Resulting of the subtraction of the polinomios
 subPoli p1 p2 = sumPoli_ (p1 ++ (multPoli [((-1,[]),[])] p2))
+
 -- ====================================================== MULTIPLY ============================================================
 
 -- | Applies the distribuitive between two polinomios : (m1 + m2 + m3 ...) * (m'1 + m'2 + m'3 ...)
@@ -208,17 +211,17 @@ deriver m dx = if monoContainsVar m dx then deriveMono m dx else ((0,[1]),"ç") 
 deriveMono :: Monomio -- ^ Monomio
            -> Char    -- ^ deriving variable
            -> Monomio -- ^ Resulting of deriving the Monomio by the variable char
-deriveMono m dx = (((monoCoef m) * exp_, exponents), (monoVar m))
+deriveMono m dx = if exp_ == -1 then ((0,[]),"") else (((monoCoef m) * exp_, exponents), (monoVar m))
     where
-        aux = zip (monoVar m) (monoExp m) -- (var, exp)
-        aux2 =  (zip [0..] aux) -- (index, (var, exp))
-        auxElem = foldr auxFunc (-1, (' ',-1)) aux2
-        auxFunc e acc = if (fst (snd e)) == dx then e else acc -- procura o elemento com as infos uteis
-        (index, exp_) = (fst auxElem, snd (snd auxElem)) -- index e expoente atual da derivada em questao
-        exponents = replaceAtIndex index (exp_ - 1) (monoExp m) -- reduz expoente da derivada em questao
-
--- ====================================================== Pow ============================================================
-
+        exp_aux = zip (monoVar m) (monoExp m) -- [(var, exp)]
+        index_aux = zip (monoVar m) [0..] -- [(var, exp)]
+        exp_ = unwrapper $ lookup dx exp_aux
+        index = unwrapper $ lookup dx index_aux
+        exponents = replaceAtIndex index (exp_ - 1) (monoExp m)   -- reduz expoente da derivada em questao
+        unwrapper x = case x of 
+                        Just n  -> n
+                        Nothing -> -1
+                        
 -- | Makes a pow of the given polinomio for the given integer
 powPoli :: Polinomio -- ^ polinomio 
         -> Int       -- ^ the power
