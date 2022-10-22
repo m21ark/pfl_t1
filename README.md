@@ -90,23 +90,43 @@ TODO
 
 ### Normalizar Polinómio
 
-TODO
+A normalização de polinómios passa por analisar os monómios que o constituiem. Um polinómio normalizado deve ter os seus monómios ordenados por grau e variáveis que possuem.
+Para tal, recorre-se a funções específicas de sorting que recorrem a `sortBy` pelas ordens e critérios que desejamos.
+Deve também assegurar que não temos monómios com coeficiente nulos (estes são removidos). É igualmente necessário ter em atenção os expoentes nulos que levam à remoção da variável em questão.
 
 ### Somar Polinómios
 
-TODO
+Começando pelo caso mais simples, a soma de dois monómios é apenas possível caso estes possuem iguais variáveis com os mesmos expoentes. O resultado desta operação resulta em somar os coeficientes e manter as variáveis e respetivos expoentes.
+
+A soma de dois polinómios nada mais é do que a concatenação de dois polinómios `([Monómio] ++ [Monómio])` seguida de uma tentativa de juntar todos os monómios que obedeçam ao critério de soma de monómios acima mencionado.
+
+Para facilitar o processo, após ter uma única lista de monómios, normalizamo-la (operação explicada anteriormente) para garantir que monómios possíveis de serem somados estarão adjacentemente. Depois trata-se apenas de fazer chamadas recursivas que comparam cada par adjacente de monómios e, se compatíveis, os substitui pelo resultado da sua soma.
 
 ### Multiplicar Polinómios
 
-TODO
+Partindo do caso mais simples, isto é, a multiplicação de dois monómios, podemos depois extrapolar para o caso de polinómios.
+A multiplicação envolve uma multiplicação simples dos coeficientes seguida de uma verificação das variáveis e respetivos expoentes.
+Para tal, fazemos uma string de variáveis que seja o set das strings de cada um dos monómios e depois vamos a cada monómio ver que expoente corresponde a cada uma destas letras para somarmos os expoentes no resultado final.
+
+Para multiplicar polinómios, basta aplicar uma operação distributiva a cada combinação de monómios que estes polinómios possuam.
 
 ### Derivar Polinómios
 
-TODO
+A derivada de polinómios é bastante simples. Trata-se apenas de aplicar uma função de derivar monómio a cada elemento usando um `map`.
+Para derivar um monómio temos duas situações possíveis. Caso a variável em ordem à qual estamos a derivar não esteja presente na string de variáveis, o resultado é automaticamente zero.
+Caso contrário, basta procurar o expoente dessa variável, subtrair-lhe 1 e multiplicar o antigo expoente pelo coeficiente do monómio.
 
 ### Parsing Output
 
-TODO
+O parsing da representação interna para string envolve, à semelhança de todas as operações anteriores, uma conversão de cada um dos monómios para string seguida de uma função para juntar cada uma dessas strings, obtendo, assim, o polinómio a ser printado.
+
+Na passagem da representação interna escolhida para string, temos de ter em atenção várias coisas:
+
+- o coeficiente pode ser nulo (ignorar termo) ou 1 (omitir coeficiente)
+- o expoente pode ser 1 (omitir expoente)
+- podemos estar perante um monómio simples, multivarável ou até mesmo perante uma constante
+
+Para um output mais correto e organizado, é necessária a aplicação prévia de uma normalização ao polinómio a ser convertido para string.
 
 ## Exemplos de utilização
 
@@ -117,4 +137,4 @@ TODO
 - Marco André (up202004891)
 - Ricardo Matos (up202007962)
 
-*22/10/2022*
+Finised on *22/10/2022*
