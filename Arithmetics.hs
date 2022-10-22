@@ -16,7 +16,7 @@ replaceAtIndex n item ls
     | length ls <= n = error "Out of bounds replaceAtIndex"
     | otherwise = a ++ (item:b) where (a, (_:b)) = splitAt n ls
 
--- | Basicamente transforma lista num set sorted e volta a lista --> talvez podiamos usar Data.Set se n fizer mal
+-- | Removes duplicates from a list
 rmvdups :: (Ord a)
         => [a]     -- ^ the list of items to be sorted
         -> [a]     -- ^ list of items sorted
@@ -39,29 +39,29 @@ monoVar m = snd m
 
 -- ====================================================== NORMALIZE ============================================================
 
--- | Filtra monimios nulos de polinomio -->
+-- | Removes monomios with 0 coeficient
 noZeroCoef :: Polinomio -- ^ Polinomio
            -> Polinomio -- ^ Polinomio with no zero coef
 noZeroCoef poli = filter (\mono -> 0 /= monoCoef mono) poli 
 
--- | testa se monomio possui variavel dada
+-- | Checks if the monomio contains vars
 monoContainsVar :: Monomio -- ^ Monomio
                 -> Char    -- ^ Var
                 -> Bool    -- ^ Has var then true else false
 monoContainsVar mono var = elem var $ monoVar mono
 
--- | Removes monomios with zero exponents
+-- | Cleans monomios with zero exponents
 cleanZeroExp :: [Int]           -- ^ List of exponents
              -> String          -- ^ Variables            
              -> ([Int], String) -- ^ resulting (exponents, variables)
 cleanZeroExp a b = ([z | z <- a, z /= 0], [snd x | x <- zip a b, fst x /= 0]) 
 
--- | Remove monomios que tenham coeficiente nulo
+-- | Cleans monomios with zero exponents belonging to a polinomio
 noZeroExp :: Polinomio -- ^ list of monomios
           -> Polinomio -- ^ List resulted from removing null exponents
 noZeroExp p = [((fst (fst x), fst y), snd y) | x <- p, let y = cleanZeroExp (snd (fst x)) (snd x) ]
                 
--- | Verifica o tamanho dos expoentes nos monomios
+-- | Checks who gots the greater exponent from the two list
 checkGreaterExp :: [Int]    -- ^ list of exponents
                    -> [Int] -- ^ list of exponents
                    -> Bool  -- ^ True if left is greater than right in exponents
@@ -72,7 +72,7 @@ checkGreaterExp (x:xs) (y:ys) | x <  y = False
                               | x >  y = True
                               | otherwise = checkGreaterExp xs ys
 
--- | Ordena monomios por grau
+-- | Checks the monomio greater. First check the variables and then the exponent
 monoSort :: Monomio  -- ^ Monomio
          -> Monomio  -- ^ Monomio
          -> Ordering -- ^ True if left is greater than the right monomios exponents
@@ -81,7 +81,7 @@ monoSort a b | snd a > snd b = LT
              | checkGreaterExp  (monoExp a) (monoExp b) = GT
              | otherwise = LT
 
--- | Verifica ordem dos monomios por variaveis             
+-- | Checks the monomio greater. According to the variables     
 monoSortVar :: Ord x => 
             (a, x)      -- ^ (exponents, variables)
             -> (a, x)   -- ^ (exponents, variables)
@@ -89,13 +89,13 @@ monoSortVar :: Ord x =>
 monoSortVar x b | snd x < snd b = LT
                 | otherwise = GT
 
--- | Ordena monomios pelas variaveis que têm
+-- | Sorts the monomios variables
 monoSortVars :: Monomio -- ^ Monomio
              -> Monomio -- ^ Monomio sortBy its variables
 monoSortVars x = ((monoCoef x, a), b)
                     where (a, b) = unzip [s | s <- sortBy (monoSortVar) (zip (monoExp x) (monoVar x))]  
 
--- | Normaliza monomios com base nos graus e variáveis que possuem
+-- | Normalizes the monomio variables
 normaliseVars :: Monomio -- ^ Monomio
               -> Monomio -- ^ Monomio normalised by Vars coef etc...
 normaliseVars p =  ((monoCoef p, exps), vars)
@@ -103,12 +103,12 @@ normaliseVars p =  ((monoCoef p, exps), vars)
                           exps = [sum [fst e | e <- ex] | ex <- z] 
                           vars = [ snd (var !! 0) | var <- z]
                           
--- | Normaliza polinomios verificando coeficientes nulos, ordenando os monomios por grau e variaveis que possuem
+-- | Normalizes polinomios taking into account the variables, zero coef and exponents, and making appropriate sums.
 normPoli :: Polinomio -- ^ list of monomios
          -> Polinomio -- ^ normalised list of monomios
 normPoli p =   sumPoli_ . (sortBy monoSort) . noZeroExp . noZeroCoef $ [normaliseVars . monoSortVars $ x | x <- p]
 
--- | Passa polinomio normalizado para string
+-- | Parses to string a polinomio representation
 poliParseToStr ::  Polinomio -- ^ polinomio
                -> String     -- ^ representation of a polinomio in string
 poliParseToStr poli =  if result == "" then "0" else result
@@ -116,7 +116,7 @@ poliParseToStr poli =  if result == "" then "0" else result
     
 -- isto poe '+' entre cada monomio formatado mas se for negativo temos de ver dps cm fazer...
 
--- | passa monomio para string
+-- | Parses monomio to string 
 monoParseToStr::  Monomio -- ^ Monomio
               -> String   -- ^ The representation of a monomio in string
 monoParseToStr m =  coefShow  ++ (if together /= "ç^0" then together else "")
@@ -129,13 +129,13 @@ monoParseToStr m =  coefShow  ++ (if together /= "ç^0" then together else "")
 
 -- ====================================================== SUM ============================================================
 
--- | Verifica se a soma entre 2 monomios é possivel com base nas variaveis e respetivos expoentes
+-- | Verifies if a sum is possible between two monomios
 sumMonoCompatible :: Monomio -- ^ Monomio
                   -> Monomio -- ^ Monomio
                   -> Bool    -- ^ True if its possible to add
 sumMonoCompatible m1 m2 = (monoVar m1 == monoVar m2) && (monoExp m1 == monoExp m2)
 
--- | Testar primeiro se dá para somar com sumMonoCompatible para evitar chamar o erro de prevencao
+-- | Sums monomios if it's possible
 sumMono :: Monomio -- ^ Monomio
         -> Monomio -- ^ Monomio
         -> Monomio -- ^ Resulting of adding the 2 monomios
@@ -143,7 +143,7 @@ sumMono m1 m2
     | not $ sumMonoCompatible m1 m2 = error "incompatible sum!"
     | otherwise = (( (monoCoef m1) + (monoCoef m2) , monoExp m1), monoVar m1)
     
--- | Pega num polinomio normaliado q é a mistura/soma de dois e agora junta as parcelas possiveis de juntar
+-- | Makes the appropriate sums, if any, within a polinomio
 sumPoli_ :: Polinomio -- ^ Polinomio
          -> Polinomio -- ^ Resulting of adding the monomios of the polinomio
 sumPoli_ [] = []
@@ -155,19 +155,20 @@ sumPoli_  (m1:ps)
         m2 = head ps
         res = (sumMono m1 m2)
     
--- | Isto junta os dois polinomios num, mas dps isto precisa levar um parse para dps sim chamar sumPoli_ q necessita de receber input ja normalizado
+-- | Sums to polinomios, returning the resulted one.
 sumPoli :: Polinomio -- ^ Polinomio
         -> Polinomio -- ^ Polinomio
         -> Polinomio -- ^ Resulting of the addition of the polinomios
 sumPoli p1 p2 = {- sumPoli $ parse $ -} p1 ++ p2
 
+-- | substracts two polinomios
 subPoli :: Polinomio -- ^ Polinomio
         -> Polinomio -- ^ Polinomio
         -> Polinomio -- ^ Resulting of the subtraction of the polinomios
 subPoli p1 p2 = sumPoli_ (p1 ++ (multPoli [((-1,[]),[])] p2))
 -- ====================================================== MULTIPLY ============================================================
 
--- | Aplica a distributiva entre cada par de monomios dos polinomios: (m1 + m2 + m3 ...) * (m'1 + m'2 + m'3 ...)
+-- | Applies the distribuitive between two polinomios : (m1 + m2 + m3 ...) * (m'1 + m'2 + m'3 ...)
 multPoli :: Polinomio -- ^ Polinomio
          -> Polinomio -- ^ Polinomio
          -> Polinomio -- ^ Resulting of the multiplication of the polinomios
@@ -175,7 +176,7 @@ multPoli p1 p2 = [multMono (p1!!x) (p2!!y) | (x,y)<-genPairs]
     where
         genPairs = [(x,y) | x<-[0..(length p1)-1], y<-[0..(length p2)-1]]  -- acho q da para tirar a var genPairs e por td numa linha
 
--- | Multiplica dois monomios
+-- | Muliplies two monomios
 multMono :: Monomio -- ^ Monomio
          -> Monomio -- ^ Monomio
          -> Monomio -- ^ Resulting of multiplying the 2 monomios
@@ -190,21 +191,20 @@ multMono m1 m2 =  ((coef, exp_), vars)
 
 -- ====================================================== DERIVE ============================================================
 
--- | Derivar polinomio dado em ordem a char dado. Vai derivar monomio a monomio
+-- | Derives the polinomio for the given char var
 derivePoli :: Polinomio  -- ^ Polinomio
            -> Char       -- ^ deriving variable
            ->  Polinomio -- ^ Resulting of deriving the polinomio by the variable char
 derivePoli poli dx = noZeroCoef $ map (\mono -> deriver mono dx) poli 
 
--- | Função auxiliar para poupar tempo. Se aparecer um monomio sem a variavel a qual estamos a derivar, poe logo a constante zero
+-- | Helper Function that automatically put a zero coef if the monomio doesn't have the char for wich we derive
 deriver :: Monomio -- ^ Monomio
         -> Char    -- ^ deriving variable
         -> Monomio -- ^ 0 if it doesn't exist the variable in the monomio coef else returns the deriveMono result
 deriver m dx = if monoContainsVar m dx then deriveMono m dx else ((0,[1]),"ç") -- ç representa uma constante
 
 
--- isto ja assume q monomio esta normalizado ent pode falhar se n estiver na forma C * X^a * Y^b ...
--- | Deriva monomio --> esta funcao esta um pouco confusa mas da para simplificar consideravelmente dps
+-- | Derives a monomio for the variable given 
 deriveMono :: Monomio -- ^ Monomio
            -> Char    -- ^ deriving variable
            -> Monomio -- ^ Resulting of deriving the Monomio by the variable char
