@@ -4,7 +4,7 @@ module Arithmetics where -- Este ficheiro contem as funções de Normalizar, Som
 import Data.List -- to use splitAt, interspace
 
 -- | Types definition
-type Monomio = ((Int, [Int]), String) -- 3yx^2 = ([3,], 2, "xy")
+type Monomio = ((Int, [Int]), String) 
 type Polinomio = [Monomio]
 
 -- | replace item at pos N with nem ITEM in list LS

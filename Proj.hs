@@ -30,4 +30,5 @@ main_test = check
 
 -- Main code call
 main :: IO ()
-main = main_test >> main_ "0"
+main = main_ "0"
+
