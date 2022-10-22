@@ -112,9 +112,14 @@ normPoli p =   sumPoli_ . (sortBy monoSort) . noZeroExp . noZeroCoef $ [normalis
 
 -- | Parses to string a polinomio representation
 poliParseToStr ::  Polinomio -- ^ polinomio
-               -> String     -- ^ representation of a polinomio in string
+                -> String     -- ^ representation of a polinomio in string
 poliParseToStr poli =  if result == "" then "0" else result
-    where result = concat $  intersperse " + " $ map monoParseToStr $ noZeroCoef poli 
+    where 
+        result = auxF $ map monoParseToStr $ noZeroCoef poli 
+        auxF [] = ""
+        auxF (x:xs) =  (if (head x) /='-' then " + " else " ") ++ x ++ (auxF xs)
+
+        --result = concat $  intersperse " + " $ map monoParseToStr $ noZeroCoef poli 
     
 -- isto poe '+' entre cada monomio formatado mas se for negativo temos de ver dps cm fazer...
 
@@ -125,10 +130,12 @@ monoParseToStr m =  coefShow  ++ (if together /= "ç^0" then together else "")
     where
         aux = zip (monoExp m) (monoVar m)
         together =  concat $ intersperse "*" [[var] ++ expShow exp_ | (exp_, var) <- aux , exp_ /= 0 ]
-        expShow exp_ = (if exp_ /= 1 then "^" ++ show exp_ else "")
-        coefShow = (if ((monoCoef m) /= 1) || ((null (monoVar m))) then show (monoCoef m) else "")
+        expShow exp_ = if exp_ /= 1 then "^" ++ show exp_ else ""
 
-
+        coefShow = if (monoCoef m) == -1 then "- " else negativeCoef
+        negativeCoef = if (monoCoef m) < -1 then "- " ++ show (-(monoCoef m))  else positiveCoef
+        positiveCoef = if ((monoCoef m) /= 1) || ((null (monoVar m))) then show (monoCoef m) else ""
+        
 -- ====================================================== SUM ============================================================
 
 -- | Verifies if a sum is possible between two monomios
