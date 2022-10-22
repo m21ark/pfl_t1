@@ -78,7 +78,7 @@ monoSort :: Monomio  -- ^ Monomio
          -> Ordering -- ^ True if left is greater than the right monomios exponents
 monoSort a b | snd a > snd b = LT 
              | snd a < snd b = GT
-             | checkGreaterExp  (monoExp a) (monoExp b) = GT
+             | checkGreaterExp (monoExp b) (monoExp a) = GT -- If the variables are equal then we want sorted with descending order
              | otherwise = LT
 
 -- | Checks the monomio greater. According to the variables     
@@ -216,3 +216,13 @@ deriveMono m dx = (((monoCoef m) * exp_, exponents), (monoVar m))
         auxFunc e acc = if (fst (snd e)) == dx then e else acc -- procura o elemento com as infos uteis
         (index, exp_) = (fst auxElem, snd (snd auxElem)) -- index e expoente atual da derivada em questao
         exponents = replaceAtIndex index (exp_ - 1) (monoExp m) -- reduz expoente da derivada em questao
+
+-- ====================================================== Pow ============================================================
+
+-- | Makes a pow of the given polinomio for the given integer
+powPoli :: Polinomio -- ^ polinomio 
+        -> Int       -- ^ the power
+        -> Polinomio -- ^ the polinomio resulting from the pow
+powPoli p x | x == 0 =  [((1, []),"")]
+            | x > 0  = normPoli  $ (foldr  (multPoli) p [p | i <- [2..x], i > 0]) 
+            | otherwise = error "Not valid in the context of a polinomio"

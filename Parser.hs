@@ -12,6 +12,7 @@ data Expr = Add Expr Expr
           | Poli Polinomio
           | Derive Expr Expr-- NOT POW CHANGE LATER 
           | Sub Expr Expr
+          | Pow Expr Expr
           deriving (Eq)
 
 -- | Show a representation of an evaluated expression in the form of a normalised Polinomial
@@ -37,7 +38,7 @@ instance Monad Parser where
   p >>= f = Parser (\cs ->
     concat [parse (f a) cs' | (a, cs') <- parse p cs])
 
--- | Defines a Alternative in which the second choice is chosen over the first if the first fails.
+-- | Defines a Alternative in which the second choice is chosen over the first if the first fails. In this case if the first parse fails.
 instance Alternative Parser where
   empty = Parser (\_ -> [])
   p <|> q = Parser (\cs ->
@@ -52,6 +53,7 @@ eval (Add e1 e2) = sumPoli_ ((eval e1) ++ (eval e2))
 eval (Mult e1 e2) = multPoli (eval e1) (eval e2)
 eval (Derive e1 e2) = derivePoli (eval e1) (monoVar ((eval e2) !! 0) !! 0)
 eval (Sub e1 e2) = subPoli (eval e1) (eval e2)
+eval (Pow e1 e2) = powPoli (eval e1) (monoCoef (eval e2 !! 0))
 
 -- | Finds the coef of the monomial 
 findValue :: (String, Int) -- ^ The string to evaluate/parse and the number already seen
@@ -133,6 +135,10 @@ add = token "+" *> pure Add <|> token "-" *> pure Sub
 derive :: Parser (Expr -> Expr -> Expr)
 derive = token "'" *> pure Derive
 
+-- | Checks if the next token is a pow operator
+pow :: Parser (Expr -> Expr -> Expr)
+pow = token "**" *> pure Pow 
+
 -- | Constructs a Operation with left association. In our case, the a means Expr.  
 chainl1 :: Parser a ->          -- ^ Represents the Factor between the separators
            Parser (a -> a -> a) -- ^ Used for the separators
@@ -154,7 +160,7 @@ polinomio = space *> fmap parseExpr (some (satisfy isPoli))
  
 -- | Defines an expression
 expr :: Parser Expr
-expr = subexpr `chainl1` derive `chainl1` mul `chainl1` add   
+expr = subexpr `chainl1` derive `chainl1` pow `chainl1` mul `chainl1` add   
 
 -- | Defines a subexpression
 subexpr :: Parser Expr
