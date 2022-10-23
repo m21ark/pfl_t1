@@ -75,14 +75,17 @@ checkGreaterExp (x:xs) (y:ys) | x <  y = False
                               | x >  y = True
                               | otherwise = checkGreaterExp xs ys
 
--- | Checks the monomio greater. First check the variables and then the exponent
+-- | Checks the monomio greater. First check the exponents and then the variables
 monoSort :: Monomio  -- ^ Monomio
          -> Monomio  -- ^ Monomio
          -> Ordering -- ^ True if left is greater than the right monomios exponents
-monoSort a b | snd a > snd b = LT 
-             | snd a < snd b = GT
-             | checkGreaterExp (monoExp b) (monoExp a) = GT -- If the variables are equal then we want sorted with descending order
+monoSort a b | greatExpba = GT -- If the variables are equal then we want sorted with descending order
+             | greatExpab = LT
+             | snd a > snd b  = GT 
+             | snd a < snd b  = LT
              | otherwise = LT
+                where greatExpba = checkGreaterExp (monoExp b) (monoExp a)
+                      greatExpab = checkGreaterExp (monoExp a) (monoExp b)
 
 -- | Checks the monomio greater. According to the variables     
 monoSortVar :: Ord x => 
