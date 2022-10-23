@@ -193,7 +193,7 @@ A primeira representa operação de potência. A segunda serve para representar 
 
 ## Exemplos de utilização
 
-```
+```MATLAB
 > 3x^3 - 5y -5x^3                     # Soma simples 
 - 2x^3 - 5y
 
