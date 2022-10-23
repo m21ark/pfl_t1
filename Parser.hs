@@ -83,7 +83,6 @@ parseMono (_, _) = error "Invalid Char present in input"
 parsePolo :: String     -- ^ String representation
           -> Polinomio  -- ^ Polynomial resulted from parsing
 parsePolo "" = [] 
-parsePolo (s:s') | s == ')' = parsePolo s'
 parsePolo s =  normPoli ([mono] ++ parsePolo toParseStr)
                 where (toParseStr, mono) = parseMono (s, ((1, []), ""))
 
@@ -150,7 +149,6 @@ p `chainl1` op = p >>= rest
 parseExpr :: String -- ^ String to parse
           -> Expr   -- ^ Resulting expression
 parseExpr "" = Poli []
-parseExpr (s:s') | s == ')' = Poli $ normPoli $ parsePolo $ s'
 parseExpr s =  Poli $ normPoli ([mono] ++ parsePolo toParseStr)
                 where (toParseStr, mono) = parseMono (s, ((1, []), ""))
 
@@ -164,6 +162,10 @@ inversePoli :: Parser Expr -- ^ The expression to evaluate if we should negate
             -> Parser Expr -- ^ The resulting parsed expression if it happens to have a negated minus else the first parser 
 inversePoli x = char '-' *> fmap negatePoli x <|> x 
 
+-- | Defines the case in which we should negate an expression
+inverseExpr :: Parser Expr -- ^ The
+inverseExpr = token "-(" *> fmap negatePoli expr <* token ")"
+
 -- | "Defines" a polinomio
 polinomio :: Parser Expr
 polinomio = let parsed = fmap parseExpr (some (satisfy isPoli))
@@ -175,7 +177,7 @@ expr = subexpr `chainl1` derive `chainl1` pow `chainl1` mul `chainl1` add
 
 -- | Defines a subexpression
 subexpr :: Parser Expr
-subexpr = token "(" *> expr <* token ")" <|> polinomio
+subexpr = token "(" *> expr <* token ")" <|> inverseExpr <|> polinomio
 
 -- | Replies to the input String of the user
 repl :: String -- ^ String reprenting a polinomio
