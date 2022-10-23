@@ -115,13 +115,12 @@ poliParseToStr ::  Polinomio -- ^ polinomio
                 -> String     -- ^ representation of a polinomio in string
 poliParseToStr poli =  if result == "" then "0" else result
     where 
-        result = auxF $ map monoParseToStr $ noZeroCoef poli 
+        result = firstElem ++ (auxF $ tail $ strL)
+        strL = map monoParseToStr $ noZeroCoef poli 
+        firstElem = if (head (head strL)) == '-' then "-" ++ (tail (head strL))  else (head strL)
         auxF [] = ""
         auxF (x:xs) =  (if (head x) /='-' then " + " else " ") ++ x ++ (auxF xs)
 
-        --result = concat $  intersperse " + " $ map monoParseToStr $ noZeroCoef poli 
-    
--- isto poe '+' entre cada monomio formatado mas se for negativo temos de ver dps cm fazer...
 
 -- | Parses monomio to string 
 monoParseToStr::  Monomio -- ^ Monomio

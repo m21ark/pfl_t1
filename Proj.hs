@@ -26,9 +26,9 @@ main_ prev = do
 
 -- For QuickCheck Property Based Testing
 main_test :: IO Bool
-main_test = check
+main_test = check -- used only when testing
 
 -- Main code call
 main :: IO ()
-main = main_test >> main_ "0"
+main = main_ "0"
 
