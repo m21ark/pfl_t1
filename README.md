@@ -66,7 +66,7 @@ Deve agora ser possível compilar os ficheiros.
 
 ## Testagem
 
-Para testar o código recorremos, como já foi previamente mencionado, à ferramente QuickCheck.
+Para testar o código recorremos, como já foi previamente mencionado, à ferramenta QuickCheck.
 Por limitação de tempo e por não ser o foco principal do trabalho, fizemos apenas alguns testes para corroborar a solidez das operações principais.
 Para correr os testes usamos o comando *make check*.
 
@@ -144,13 +144,26 @@ Torna-se, então, imperativo que haja um parser capaz de formar esta àrvore de 
 
 Num primeiro momento tentou-se construir a àrvore de uma forma um pouco ingénua. Depois de alguma pesquisa persebeu-se o que teria de ser feito para que a àrvore resultá-se. Destaque para a seguinte [fonte](https://oliverbalfour.github.io/haskell/2020/08/09/parsing-arithmetic-with-monads.html) que explica em detalhe os passos para fazer um simples parser.
 
-O parser funciona com a seguinte lógica: sempre que se encontra digitos, letras ou ^ é considerado que se está perante um polinómio e portanto são mapeadas todas as strings que obdecem a essa regra com a função `parseExpr` que se responsablisa por chamar a função `parsePoli` e de trasformar o seu output numa expressão terminal. Caracteres como `+`, `-`, `*`, `'` (derivada) e `*` são entendidos como operadores aos quais chamamos a Expr corresponde. Este são depois encandeados com outras expressões respeitando sempre a prioridade de operadores, ver `expr` e `subexpr` no ficheiro Parser.hs.
+O parser funciona com a seguinte lógica: sempre que se encontra digitos, letras ou ^ é considerado que se está perante um polinómio e portanto são mapeadas todas as strings que obdecem a essa regra com a função `parseExpr` que se responsablisa por chamar a função `parsePoli` e de trasformar o seu output numa expressão terminal. Caracteres como `+`, `-`, `*`, `'` (derivada) e `**` são entendidos como operadores aos quais chamamos a Expr corresponde. Este são depois encandeados com outras expressões respeitando sempre a prioridade de operadores, ver `expr` e `subexpr` no ficheiro Parser.hs.
 
 ### Normalizar Polinómio
 
 A normalização de polinómios passa por analisar os monómios que o constituiem. Um polinómio normalizado deve ter os seus monómios ordenados descendentemente por grau e variáveis que possuem.
 Para tal, recorre-se a funções específicas de sorting que recorrem a `sortBy` pelas ordens e critérios que desejamos.
-Deve também assegurar que não temos monómios com coeficiente nulos (estes são removidos). É igualmente necessário ter em atenção os expoentes nulos que levam à remoção da variável em questão.
+```Haskell
+-- | Checks the monomio greater. First check the exponents and then the variables
+monoSort :: Monomio  -- ^ Monomio
+         -> Monomio  -- ^ Monomio
+         -> Ordering -- ^ True if left is greater than the right monomios exponents
+monoSort a b | greatExpba = GT -- If the variables are equal then we want sorted with descending order
+             | greatExpab = LT
+             | snd a > snd b  = GT 
+             | snd a < snd b  = LT
+             | otherwise = LT
+                where greatExpba = checkGreaterExp (monoExp b) (monoExp a)
+                      greatExpab = checkGreaterExp (monoExp a) (monoExp b)
+```
+Deve-se também assegurar que não temos monómios com coeficiente nulos (estes são removidos). É igualmente necessário ter em atenção os expoentes nulos que levam à remoção da variável em questão.
 
 ### Somar Polinómios
 
@@ -188,8 +201,8 @@ Para um output mais correto e organizado, é necessária a aplicação prévia d
 
 ### Funcionalidades Extras
 
-Foram implementadas duas funcionalidades que auxiliam ao usar o programa. São elas `**` e `!`.
-A primeira representa operação de potência. A segunda serve para representar a operação feita anteriormente, acabando por funcionar como um "ANS" numa calculadora comum.
+Foram implementadas três funcionalidades que auxiliam ao usar o programa. São elas `**` , `!` e `-`.
+A primeira representa operação de potência para polinómios. A segunda serve para representar a operação feita anteriormente, acabando por funcionar como um "ANS" numa calculadora comum. A terceira corresponde à operação de subtração de polinómios.
 
 ## Exemplos de utilização
 
@@ -226,6 +239,9 @@ A primeira representa operação de potência. A segunda serve para representar 
 
 > (5x * (3y^2 -2z^3) - 2) * (4x^3)'x  # Exemplo de nested parentesis com multiplas operações
 - 120x^3*z^3 + 180x^3*y^2 - 24x^2
+
+> ((x+1)**2)'x                        # Operação de potência de polinómio seguido de uma derivada 
+2x + 2
 ```
 
 ## Grupo
