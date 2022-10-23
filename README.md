@@ -17,7 +17,7 @@ Todas as funcionalidades previstas foram implementadas.
 
 ## Configuração / Instalação / Funcionamento
 
-O código desenvolvido foi testando tanto em Linux (Ubuntu) como em Windows 10, tendo como ficheiro principal **Proj.hs**. O programa pode ser compilado e executado usando:
+O código desenvolvido foi testando tanto em Linux (Ubuntu) como em Windows 11, tendo como ficheiro principal **Proj.hs**. O programa pode ser compilado e executado usando:
 
 ```
 ghc *.hs
@@ -37,8 +37,6 @@ Foi também criado um simples Makefile para facilitar a vida com as seguintes op
 - `make run` - correr ficheiro executável
 - `make check` - correr testes ao código (mais sobre testagem abaixo)
 
-**Nota:** O Makefile possui comando Linux pelo que poderão não funcionar em Windows.
-
 ## Software Extra
 
 Relativamente ao software, para além de todas as funcionalidades do Prelúdio, utilizamos também uma biblioteca para "Property Testing" do código chamada **QuickCheck**. Este pacote requer a instalação seguinte:
@@ -47,7 +45,7 @@ Relativamente ao software, para além de todas as funcionalidades do Prelúdio, 
 cabal install QuickCheck
 ```
 
-**Nota :** Admite-se que o *cabal* já se encontre instalado na máquina.
+**Nota :** Admite-se que o *cabal* já se encontre instalado na máquina. 
 
 ### Troubleshooting
 
@@ -62,6 +60,7 @@ main_test = check
 ```
 
 Por fim, pode ser removido o ficheiro "Prop_tests.hs" no qual se encontram os testes para evitar erros ao tentar fazer import do QuickCheck.
+
 
 ## Representação Interna
 
@@ -86,11 +85,31 @@ Esta abordagem é simples e como é uma composição de pares, permite tomar par
 
 ### Parsing Input
 
-TODO
+Para fazer um parser correto é necessário saber fazer a correta distinção entre operações e valores (polinómios). Add, Mult, Derive, Sub e Pow são as nossas possíveis operações e Poli o valor terminal para a conclução de uma intrepretação da expressão. Para nos facilitar a vida consideramos que o expoente do Pow, que serve como um expoente para polinomios e não para monómios, e a variável  que é passada para o derive são ambas expressões que resultam num inteiro e num char representados por um polinómio. 
+
+```Haskell
+data Expr = Add Expr Expr
+          | Mult Expr Expr
+          | Poli Polinomio
+          | Derive Expr Expr
+          | Sub Expr Expr
+          | Pow Expr Expr
+          deriving (Eq)
+
+instance Show Expr where
+  show x = poliParseToStr . normPoli . eval $ x
+```
+
+A função `eval` é então responsável por pegar na expressão e a reducir ao valor terminal. No ínico surgiu a dúvida se uma linguagem ambígua não poderia dar assas a erros, porém a àrvore de sintaxe não será aqui construída nem teria neste caso impacto na evaluação que o nosso intrepetador faz. 
+Torna-se então imperativo que haja um parser capaz de formar esta àrvore de sintaxe. Num primeiro momento tentou-se construir a àrvore de uma forma um pouco ingénua. Depois de alguma pesquisa persebeu-se o que teria de ser feito para que a àrvore resultá-se. Destaque para a seguinte fonte que explica em detalhe os passos para fazer um simples parser, [link](https://oliverbalfour.github.io/haskell/2020/08/09/parsing-arithmetic-with-monads.html).
+
+O parser funciona com a seguinte lógica. Sempre que se encontra digitos, letras ou ^ é considerado que se está perante um polinómio e portanto são mapeadas todas as strings que obdecem a essa regra com a função `parseExpr` que se responsablisa por chamar a função `parsePoli` e de trasformar o seu output numa expressão terminal. Caracteres como '+', '-', '**', '''(derivada) e '*' são entendidos como operadores aos quais chamamos a Expr corresponde. Este são depois encandeados com outras expressões respeitando sempre a prioridade de operadores, ver `expr` e `subexpr` no ficheiro Parser.hs. 
+
+
 
 ### Normalizar Polinómio
 
-A normalização de polinómios passa por analisar os monómios que o constituiem. Um polinómio normalizado deve ter os seus monómios ordenados por grau e variáveis que possuem.
+A normalização de polinómios passa por analisar os monómios que o constituiem. Um polinómio normalizado deve ter os seus monómios ordenados descendentemente por grau e variáveis que possuem.
 Para tal, recorre-se a funções específicas de sorting que recorrem a `sortBy` pelas ordens e critérios que desejamos.
 Deve também assegurar que não temos monómios com coeficiente nulos (estes são removidos). É igualmente necessário ter em atenção os expoentes nulos que levam à remoção da variável em questão.
 
@@ -137,4 +156,4 @@ TODO
 - Marco André (up202004891)
 - Ricardo Matos (up202007962)
 
-Finised on *22/10/2022*
+Finished on *22/10/2022*

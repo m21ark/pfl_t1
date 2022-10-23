@@ -10,7 +10,7 @@ import Data.Char
 data Expr = Add Expr Expr
           | Mult Expr Expr
           | Poli Polinomio
-          | Derive Expr Expr-- NOT POW CHANGE LATER 
+          | Derive Expr Expr
           | Sub Expr Expr
           | Pow Expr Expr
           deriving (Eq)
