@@ -19,13 +19,13 @@ Todas as funcionalidades previstas foram implementadas.
 
 O código desenvolvido foi testando tanto em Linux (Ubuntu) como em Windows 11, tendo como ficheiro principal **Proj.hs**. O programa pode ser compilado e executado usando:
 
-```
+```SH
 ghc *.hs
 ```
 
 ou através do interpretador GHCI com:
 
-```
+```SH
 ghci Proj.hs
 main
 ```
@@ -41,15 +41,17 @@ Foi também criado um simples Makefile para facilitar a vida com as seguintes op
 
 Relativamente ao software, para além de todas as funcionalidades do Prelúdio, utilizamos também uma biblioteca para "Property Testing" do código chamada **QuickCheck**. Este pacote requer a instalação seguinte:
 
-```
+```SH
 cabal install QuickCheck
 ```
 
-**Nota :** Admite-se que o *cabal* já se encontre instalado na máquina. 
+**Nota :** Admite-se que o *cabal* já se encontre instalado na máquina.
 
 ### Troubleshooting
 
-Durante o desenvolvimento deste trabalho verificaram-se vários problemas ao instalar e utilizar o *QuickCheck* tanto em Windows como em Linux pelo que é possível que o código não corra. Caso tal se verifique, recomenda-se os seguintes passos:
+Durante o desenvolvimento deste trabalho verificaram-se vários problemas ao instalar e utilizar o *QuickCheck* tanto em Windows como em Linux pelo que é possível que o código não corra.
+Note-se, por exemplo, que o Makefile possui duas versões diferentes para compilar o código, dependendo do sistema operativo em uso.
+Caso problemas se verifiquem, recomenda-se os seguintes passos:
 
 ```Haskell
 import Prop_tests -- Comentar o import dos módulo de testes (módulo em Prop_tests.hs) presente em Proj.hs
@@ -60,7 +62,44 @@ main_test = check
 ```
 
 Por fim, pode ser removido o ficheiro "Prop_tests.hs" no qual se encontram os testes para evitar erros ao tentar fazer import do QuickCheck.
+Deve agora ser possível compilar os ficheiros.
 
+## Testagem
+
+Para testar o código recorremos, como já foi previamente mencionado, à ferramente QuickCheck.
+Por limitação de tempo e por não ser o foco principal do trabalho, fizemos apenas alguns testes para corroborar a solidez das operações principais.
+Para correr os testes usamos o comando *make check*.
+
+```SH
+m:~/Desktop/1S/PFL/git_t1$ make check
+echo "check" |  ghci Proj.hs
+GHCi, version 8.6.5: http://www.haskell.org/ghc/  :? for help
+[1 of 4] Compiling Arithmetics      ( Arithmetics.hs, interpreted )
+[2 of 4] Compiling Parser           ( Parser.hs, interpreted )
+[3 of 4] Compiling Prop_tests       ( Prop_tests.hs, interpreted )
+[4 of 4] Compiling Main             ( Proj.hs, interpreted )
+Ok, four modules loaded.
+*Main> === prop_associativity_sum from ./Prop_tests.hs:17 ===
++++ OK, passed 100 tests.
+
+=== prop_null_element_sum from ./Prop_tests.hs:20 ===
++++ OK, passed 100 tests.
+
+=== prop_coef_mult from ./Prop_tests.hs:25 ===
++++ OK, passed 100 tests.
+
+=== prop_associativity_mult from ./Prop_tests.hs:28 ===
++++ OK, passed 100 tests.
+
+=== prop_null_element_mult from ./Prop_tests.hs:31 ===
++++ OK, passed 100 tests.
+
+=== prop_const_deriv from ./Prop_tests.hs:36 ===
++++ OK, passed 100 tests.
+
+True
+*Main> Leaving GHCi.
+```
 
 ## Representação Interna
 
@@ -85,7 +124,7 @@ Esta abordagem é simples e como é uma composição de pares, permite tomar par
 
 ### Parsing Input
 
-Para fazer um parser correto é necessário saber fazer a correta distinção entre operações e valores (polinómios). Add, Mult, Derive, Sub e Pow são as nossas possíveis operações e Poli o valor terminal para a conclução de uma intrepretação da expressão. Para nos facilitar a vida consideramos que o expoente do Pow, que serve como um expoente para polinomios e não para monómios, e a variável  que é passada para o derive são ambas expressões que resultam num inteiro e num char representados por um polinómio. 
+Para fazer um parser correto é necessário saber fazer a correta distinção entre operações e valores (polinómios). Add, Mult, Derive, Sub e Pow são as nossas possíveis operações e Poli o valor terminal para a conclução de uma intrepretação da expressão. Para nos facilitar a vida consideramos que o expoente do Pow, que serve como um expoente para polinomios e não para monómios, e a variável  que é passada para o derive são ambas expressões que resultam num inteiro e num char representados por um polinómio.
 
 ```Haskell
 data Expr = Add Expr Expr
@@ -100,14 +139,12 @@ instance Show Expr where
   show x = poliParseToStr . normPoli . eval $ x
 ```
 
-A função `eval` é então responsável por pegar na expressão e a reduzir ao valor terminal. No início surgiu a dúvida se uma linguagem ambígua não poderia dar asas a erros, porém a àrvore de sintaxe não será aqui construída nem teria, neste caso, impacto na evaluation que o nosso intrepetador faz. 
-Torna-se, então, imperativo que haja um parser capaz de formar esta àrvore de sintaxe. 
+A função `eval` é então responsável por pegar na expressão e a reduzir ao valor terminal. No início surgiu a dúvida se uma linguagem ambígua não poderia dar asas a erros, porém a àrvore de sintaxe não será aqui construída nem teria, neste caso, impacto na evaluation que o nosso intrepetador faz.
+Torna-se, então, imperativo que haja um parser capaz de formar esta àrvore de sintaxe.
 
 Num primeiro momento tentou-se construir a àrvore de uma forma um pouco ingénua. Depois de alguma pesquisa persebeu-se o que teria de ser feito para que a àrvore resultá-se. Destaque para a seguinte [fonte](https://oliverbalfour.github.io/haskell/2020/08/09/parsing-arithmetic-with-monads.html) que explica em detalhe os passos para fazer um simples parser.
 
-O parser funciona com a seguinte lógica: sempre que se encontra digitos, letras ou ^ é considerado que se está perante um polinómio e portanto são mapeadas todas as strings que obdecem a essa regra com a função `parseExpr` que se responsablisa por chamar a função `parsePoli` e de trasformar o seu output numa expressão terminal. Caracteres como `+`, `-`, `*`, `'` (derivada) e `*` são entendidos como operadores aos quais chamamos a Expr corresponde. Este são depois encandeados com outras expressões respeitando sempre a prioridade de operadores, ver `expr` e `subexpr` no ficheiro Parser.hs. 
-
-
+O parser funciona com a seguinte lógica: sempre que se encontra digitos, letras ou ^ é considerado que se está perante um polinómio e portanto são mapeadas todas as strings que obdecem a essa regra com a função `parseExpr` que se responsablisa por chamar a função `parsePoli` e de trasformar o seu output numa expressão terminal. Caracteres como `+`, `-`, `*`, `'` (derivada) e `*` são entendidos como operadores aos quais chamamos a Expr corresponde. Este são depois encandeados com outras expressões respeitando sempre a prioridade de operadores, ver `expr` e `subexpr` no ficheiro Parser.hs.
 
 ### Normalizar Polinómio
 
@@ -149,9 +186,44 @@ Na passagem da representação interna escolhida para string, temos de ter em at
 
 Para um output mais correto e organizado, é necessária a aplicação prévia de uma normalização ao polinómio a ser convertido para string.
 
+### Funcionalidades Extras
+
+Foram implementadas duas funcionalidades que auxiliam ao usar o programa. São elas `**` e `!`.
+A primeira representa operação de potência. A segunda serve para representar a operação feita anteriormente, acabando por funcionar como um "ANS" numa calculadora comum.
+
 ## Exemplos de utilização
 
-TODO
+```SH
+> 3x^3 - 5y -5x^3                     # Soma simples 
+- 3y - 2x^3
+
+> (5x^3 + 3y) * (2z - 4w^3)           # Multiplicação com distributiva
+6y*z + 10x^3*z - 12w^3*y - 20w^3*x^3
+
+> 1+2*3                               # Precedência de operações com constantes
+7
+
+> 3x*4y^3+5z                          # Precedência de operações com variáveis
+5z + 12x*y^3
+
+> (3x^6)´x                            # Derivada Simples
+18x^5
+
+> (3x^6 + 4y^3 -7x^2z^4)´x            # Derivada Com Multiplas Varíaveis
+- 14x*z^4 + 18x^5
+
+> (2y^2 -3z)**2                       # Operação de potência
+9z^2 - 12y^2*z + 4y^4
+
+> 5x + 3y -2x -3z^2                   # Outro exemplo de soma
+- 3z^2 + 3y + 3x
+
+> !*(4y^7)                            # Uso do operador "!" que usa o resultado anterior
+- 12y^7*z^2 + 12y^8 + 12x*y^7
+
+> (5x * (3y^2 -2z^3) - 2) * (4x^3)´x  # Exemplo de nested parentesis com multiplas operações
+- 120x^3*z^3 + 180x^3*y^2 - 24x^2
+```
 
 ## Grupo
 
