@@ -131,7 +131,10 @@ monoParseToStr m =  coefShow  ++ (if together /= "ç^0" then together else "")
         together =  concat $ intersperse "*" [[var] ++ expShow exp_ | (exp_, var) <- aux , exp_ /= 0 ]
         expShow exp_ = if exp_ /= 1 then "^" ++ show exp_ else ""
 
-        coefShow = if (monoCoef m) == -1 then "- " else negativeCoef
+        coefShow = if (monoCoef m) == -1 then "- " ++ vars else negativeCoef
+        
+        vars = if (monoVar m) == "" then "1" else ""
+        
         negativeCoef = if (monoCoef m) < -1 then "- " ++ show (-(monoCoef m))  else positiveCoef
         positiveCoef = if ((monoCoef m) /= 1) || ((null (monoVar m))) then show (monoCoef m) else ""
         
