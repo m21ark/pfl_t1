@@ -203,6 +203,9 @@ A primeira representa operação de potência. A segunda serve para representar 
 > 1+2*3                               # Precedência de operações com constantes
 7
 
+> -(2y^2 -3z)                         # Negativa de parentesis
+3z - 2y^2
+
 > 3x*4y^3+5z                          # Precedência de operações com variáveis
 5z + 12x*y^3
 
@@ -213,7 +216,7 @@ A primeira representa operação de potência. A segunda serve para representar 
 - 14x*z^4 + 18x^5
 
 > (2y^2 -3z)**2                       # Operação de potência
-9z^2 - 12y^2*z + 4y^4
+4y^4 + 9z^2 - 12y^2*z
 
 > 5x + 3y -2x -3z^2                   # Outro exemplo de soma
 - 3z^2 + 3y + 3x
