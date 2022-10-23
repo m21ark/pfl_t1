@@ -1,9 +1,12 @@
 {-# LANGUAGE Safe #-}
-module Arithmetics where -- Este ficheiro contem as funções de Normalizar, Somar, Multiplicar, Derivar polinomios
+module Arithmetics where 
+
+-- This file holds the functions necessary for the following functions:
+-- sum, multiply, derive, normalize, parsing Poli -> String
 
 import Data.List -- to use splitAt, interspace
 
--- | Types definition
+-- | Type definition
 type Monomio = ((Int, [Int]), String) 
 type Polinomio = [Monomio]
 
@@ -124,18 +127,15 @@ poliParseToStr poli =  if result == "" then "0" else result
 
 
 -- | Parses monomio to string 
-monoParseToStr::  Monomio -- ^ Monomio
+monoParseToStr::  Monomio -- ^ Monomio to be converted to string
               -> String   -- ^ The representation of a monomio in string
 monoParseToStr m =  coefShow  ++ (if together /= "ç^0" then together else "")
     where
         aux = zip (monoExp m) (monoVar m)
         together =  concat $ intersperse "*" [[var] ++ expShow exp_ | (exp_, var) <- aux , exp_ /= 0 ]
         expShow exp_ = if exp_ /= 1 then "^" ++ show exp_ else ""
-
-        coefShow = if (monoCoef m) == -1 then "- " ++ vars else negativeCoef
-        
-        vars = if (monoVar m) == "" then "1" else ""
-        
+        coefShow = if (monoCoef m) == -1 then "- " ++ isMinus1 else negativeCoef
+        isMinus1 = if (monoVar m) == "" then "1" else ""
         negativeCoef = if (monoCoef m) < -1 then "- " ++ show (-(monoCoef m))  else positiveCoef
         positiveCoef = if ((monoCoef m) /= 1) || ((null (monoVar m))) then show (monoCoef m) else ""
         
@@ -168,10 +168,10 @@ sumPoli_  (m1:ps)
         res = (sumMono m1 m2)
     
 -- | Sums to polinomios, returning the resulted one.
-sumPoli :: Polinomio -- ^ Polinomio
-        -> Polinomio -- ^ Polinomio
+sumPoli :: Polinomio -- ^ Left Polinomio
+        -> Polinomio -- ^ Right Polinomio
         -> Polinomio -- ^ Resulting of the addition of the polinomios
-sumPoli p1 p2 = {- sumPoli $ parse $ -} p1 ++ p2
+sumPoli p1 p2 = p1 ++ p2
 
 -- | substracts two polinomios
 subPoli :: Polinomio -- ^ Polinomio
@@ -214,7 +214,7 @@ derivePoli poli dx = noZeroCoef $ map (\mono -> deriver mono dx) poli
 deriver :: Monomio -- ^ Monomio
         -> Char    -- ^ deriving variable
         -> Monomio -- ^ 0 if it doesn't exist the variable in the monomio coef else returns the deriveMono result
-deriver m dx = if monoContainsVar m dx then deriveMono m dx else ((0,[1]),"ç") -- ç representa uma constante
+deriver m dx = if monoContainsVar m dx then deriveMono m dx else ((0,[1]),"ç") -- represents a constant
 
 
 -- | Derives a monomio for the variable given 
