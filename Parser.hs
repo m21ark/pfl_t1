@@ -154,9 +154,16 @@ parseExpr (s:s') | s == ')' = Poli $ normPoli $ parsePolo $ s'
 parseExpr s =  Poli $ normPoli ([mono] ++ parsePolo toParseStr)
                 where (toParseStr, mono) = parseMono (s, ((1, []), ""))
 
+negatePoli :: Expr -> Expr
+negatePoli = Sub (Poli [((1,[]), [])])
+
+inversePoli :: Parser Expr -> Parser Expr
+inversePoli x = char '-' *> fmap negatePoli x <|> x 
+
 -- | "Defines" a polinomio
 polinomio :: Parser Expr
-polinomio = space *> fmap parseExpr (some (satisfy isPoli))
+polinomio = let parsed = fmap parseExpr (some (satisfy isPoli))
+            in space *> inversePoli parsed
  
 -- | Defines an expression
 expr :: Parser Expr
