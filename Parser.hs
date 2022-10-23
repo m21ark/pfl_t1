@@ -154,9 +154,20 @@ parseExpr (s:s') | s == ')' = Poli $ normPoli $ parsePolo $ s'
 parseExpr s =  Poli $ normPoli ([mono] ++ parsePolo toParseStr)
                 where (toParseStr, mono) = parseMono (s, ((1, []), ""))
 
+-- | Defines negation of a polinomio from when we have a minus without being a substitution
+negatePoli :: Expr -- ^ The expression to negate 
+           -> Expr -- ^ The negation
+negatePoli = Sub (Poli [((0,[]), [])])
+
+-- | Defines the case in which we should negate a polinomio
+inversePoli :: Parser Expr -- ^ The expression to evaluate if we should negate
+            -> Parser Expr -- ^ The resulting parsed expression if it happens to have a negated minus else the first parser 
+inversePoli x = char '-' *> fmap negatePoli x <|> x 
+
 -- | "Defines" a polinomio
 polinomio :: Parser Expr
-polinomio = space *> fmap parseExpr (some (satisfy isPoli))
+polinomio = let parsed = fmap parseExpr (some (satisfy isPoli))
+            in space *> inversePoli parsed
  
 -- | Defines an expression
 expr :: Parser Expr
