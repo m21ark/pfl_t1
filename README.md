@@ -105,7 +105,7 @@ Torna-se, então, imperativo que haja um parser capaz de formar esta àrvore de 
 
 Num primeiro momento tentou-se construir a àrvore de uma forma um pouco ingénua. Depois de alguma pesquisa persebeu-se o que teria de ser feito para que a àrvore resultá-se. Destaque para a seguinte [fonte](https://oliverbalfour.github.io/haskell/2020/08/09/parsing-arithmetic-with-monads.html) que explica em detalhe os passos para fazer um simples parser.
 
-O parser funciona com a seguinte lógica: sempre que se encontra digitos, letras ou ^ é considerado que se está perante um polinómio e portanto são mapeadas todas as strings que obdecem a essa regra com a função `parseExpr` que se responsablisa por chamar a função `parsePoli` e de trasformar o seu output numa expressão terminal. Caracteres como `+`, `-`, `*`', `'`(derivada) e `*` são entendidos como operadores aos quais chamamos a Expr corresponde. Este são depois encandeados com outras expressões respeitando sempre a prioridade de operadores, ver `expr` e `subexpr` no ficheiro Parser.hs. 
+O parser funciona com a seguinte lógica: sempre que se encontra digitos, letras ou ^ é considerado que se está perante um polinómio e portanto são mapeadas todas as strings que obdecem a essa regra com a função `parseExpr` que se responsablisa por chamar a função `parsePoli` e de trasformar o seu output numa expressão terminal. Caracteres como `+`, `-`, `*`, `'` (derivada) e `*` são entendidos como operadores aos quais chamamos a Expr corresponde. Este são depois encandeados com outras expressões respeitando sempre a prioridade de operadores, ver `expr` e `subexpr` no ficheiro Parser.hs. 
 
 
 
