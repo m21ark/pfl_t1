@@ -198,7 +198,7 @@ A primeira representa operação de potência. A segunda serve para representar 
 - 2x^3 - 5y
 
 > (5x^3 + 3y) * (2z - 4w^3)           # Multiplicação com distributiva
-- 20w^3*x^3 + 10x^3*z - 12w^3*y + 6y*z
+- 20w^3*x^3 - 12w^3*y + 10x^3*z + 6y*z
 
 > 1+2*3                               # Precedência de operações com constantes
 7
@@ -219,7 +219,7 @@ A primeira representa operação de potência. A segunda serve para representar 
 4y^4 - 12y^2*z + 9z^2
 
 > 5x + 3y -2x -3z^2                   # Outro exemplo de soma
-- 3z^2 + 3y + 3x
+- 3z^2 + 3x + 3y
 
 > !*(4y^7)                            # Uso do operador "!" que usa o resultado anterior
 12y^8 - 12y^7*z^2 + 12x*y^7

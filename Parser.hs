@@ -163,7 +163,7 @@ inversePoli :: Parser Expr -- ^ The expression to evaluate if we should negate
 inversePoli x = char '-' *> fmap negatePoli x <|> x 
 
 -- | Defines the case in which we should negate an expression
-inverseExpr :: Parser Expr -- ^ The
+inverseExpr :: Parser Expr 
 inverseExpr = token "-(" *> fmap negatePoli expr <* token ")"
 
 -- | "Defines" a polinomio

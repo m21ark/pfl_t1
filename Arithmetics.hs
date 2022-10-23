@@ -75,14 +75,17 @@ checkGreaterExp (x:xs) (y:ys) | x <  y = False
                               | x >  y = True
                               | otherwise = checkGreaterExp xs ys
 
--- | Checks the monomio greater. First check the variables and then the exponent
+-- | Checks the monomio greater. First check the exponents and then the variables
 monoSort :: Monomio  -- ^ Monomio
          -> Monomio  -- ^ Monomio
          -> Ordering -- ^ True if left is greater than the right monomios exponents
-monoSort a b | snd a > snd b = LT 
-             | snd a < snd b = GT
-             | checkGreaterExp (monoExp b) (monoExp a) = GT -- If the variables are equal then we want sorted with descending order
+monoSort a b | greatExpba = GT -- If the variables are equal then we want sorted with descending order
+             | greatExpab = LT
+             | snd a > snd b  = GT 
+             | snd a < snd b  = LT
              | otherwise = LT
+                where greatExpba = checkGreaterExp (monoExp b) (monoExp a)
+                      greatExpab = checkGreaterExp (monoExp a) (monoExp b)
 
 -- | Checks the monomio greater. According to the variables     
 monoSortVar :: Ord x => 
@@ -120,22 +123,10 @@ poliParseToStr [] = "0"
 poliParseToStr poli =  if result == "" then "0" else result
     where 
         result = firstElem ++ (auxF $ tail $ strL)
-        strL = map monoParseToStr $ sortBy (\(a) (b) ->  monoSortGrau a b) $ noZeroCoef poli 
+        strL = map monoParseToStr $ noZeroCoef poli 
         firstElem = if (head (head strL)) == '-' then "-" ++ (tail (head strL))  else (head strL)
         auxF [] = ""
         auxF (x:xs) =  (if (head x) /='-' then " + " else " ") ++ x ++ (auxF xs)
-
--- | orders monomios inside polinomio according to their exponents
-monoSortGrau :: Monomio -- Left side monomjo to be compared
-             -> Monomio -- Right side monomjo to be compared
-             -> Ordering -- Result of the compare
-             monoSortGrau  a b
-        | maximum leftExp < maximum rightExp = GT
-        | maximum leftExp == maximum rightExp = if (sum leftExp < sum rightExp) then GT else LT
-        | otherwise = LT
-        where
-                leftExp = snd $ fst a
-                rightExp = snd $ fst b
 
 -- | Parses monomio to string 
 monoParseToStr::  Monomio -- ^ Monomio to be converted to string
