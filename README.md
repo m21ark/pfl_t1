@@ -100,10 +100,12 @@ instance Show Expr where
   show x = poliParseToStr . normPoli . eval $ x
 ```
 
-A função `eval` é então responsável por pegar na expressão e a reducir ao valor terminal. No ínico surgiu a dúvida se uma linguagem ambígua não poderia dar assas a erros, porém a àrvore de sintaxe não será aqui construída nem teria neste caso impacto na evaluação que o nosso intrepetador faz. 
-Torna-se então imperativo que haja um parser capaz de formar esta àrvore de sintaxe. Num primeiro momento tentou-se construir a àrvore de uma forma um pouco ingénua. Depois de alguma pesquisa persebeu-se o que teria de ser feito para que a àrvore resultá-se. Destaque para a seguinte fonte que explica em detalhe os passos para fazer um simples parser, [link](https://oliverbalfour.github.io/haskell/2020/08/09/parsing-arithmetic-with-monads.html).
+A função `eval` é então responsável por pegar na expressão e a reduzir ao valor terminal. No início surgiu a dúvida se uma linguagem ambígua não poderia dar asas a erros, porém a àrvore de sintaxe não será aqui construída nem teria, neste caso, impacto na evaluation que o nosso intrepetador faz. 
+Torna-se, então, imperativo que haja um parser capaz de formar esta àrvore de sintaxe. 
 
-O parser funciona com a seguinte lógica. Sempre que se encontra digitos, letras ou ^ é considerado que se está perante um polinómio e portanto são mapeadas todas as strings que obdecem a essa regra com a função `parseExpr` que se responsablisa por chamar a função `parsePoli` e de trasformar o seu output numa expressão terminal. Caracteres como '+', '-', '**', '''(derivada) e '*' são entendidos como operadores aos quais chamamos a Expr corresponde. Este são depois encandeados com outras expressões respeitando sempre a prioridade de operadores, ver `expr` e `subexpr` no ficheiro Parser.hs. 
+Num primeiro momento tentou-se construir a àrvore de uma forma um pouco ingénua. Depois de alguma pesquisa persebeu-se o que teria de ser feito para que a àrvore resultá-se. Destaque para a seguinte [fonte](https://oliverbalfour.github.io/haskell/2020/08/09/parsing-arithmetic-with-monads.html) que explica em detalhe os passos para fazer um simples parser.
+
+O parser funciona com a seguinte lógica: sempre que se encontra digitos, letras ou ^ é considerado que se está perante um polinómio e portanto são mapeadas todas as strings que obdecem a essa regra com a função `parseExpr` que se responsablisa por chamar a função `parsePoli` e de trasformar o seu output numa expressão terminal. Caracteres como `+`, `-`, `*`', `'`(derivada) e `*` são entendidos como operadores aos quais chamamos a Expr corresponde. Este são depois encandeados com outras expressões respeitando sempre a prioridade de operadores, ver `expr` e `subexpr` no ficheiro Parser.hs. 
 
 
 
