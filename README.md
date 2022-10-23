@@ -193,38 +193,38 @@ A primeira representa operação de potência. A segunda serve para representar 
 
 ## Exemplos de utilização
 
-```SH
+```
 > 3x^3 - 5y -5x^3                     # Soma simples 
-- 3y - 2x^3
+- 2x^3 - 5y
 
 > (5x^3 + 3y) * (2z - 4w^3)           # Multiplicação com distributiva
-6y*z + 10x^3*z - 12w^3*y - 20w^3*x^3
+- 20w^3*x^3 + 10x^3*z - 12w^3*y + 6y*z
 
 > 1+2*3                               # Precedência de operações com constantes
 7
 
 > -(2y^2 -3z)                         # Negativa de parentesis
-3z - 2y^2
+- 2y^2 + 3z
 
 > 3x*4y^3+5z                          # Precedência de operações com variáveis
-5z + 12x*y^3
+12x*y^3 + 5z
 
-> (3x^6)´x                            # Derivada Simples
+> (3x^6)'x                            # Derivada Simples
 18x^5
 
-> (3x^6 + 4y^3 -7x^2z^4)´x            # Derivada Com Multiplas Varíaveis
-- 14x*z^4 + 18x^5
+> (3x^6 + 4y^3 -7x^2z^4)'x            # Derivada Com Multiplas Varíaveis
+18x^5 - 14x*z^4
 
 > (2y^2 -3z)**2                       # Operação de potência
-4y^4 + 9z^2 - 12y^2*z
+4y^4 - 12y^2*z + 9z^2
 
 > 5x + 3y -2x -3z^2                   # Outro exemplo de soma
 - 3z^2 + 3y + 3x
 
 > !*(4y^7)                            # Uso do operador "!" que usa o resultado anterior
-- 12y^7*z^2 + 12y^8 + 12x*y^7
+12y^8 - 12y^7*z^2 + 12x*y^7
 
-> (5x * (3y^2 -2z^3) - 2) * (4x^3)´x  # Exemplo de nested parentesis com multiplas operações
+> (5x * (3y^2 -2z^3) - 2) * (4x^3)'x  # Exemplo de nested parentesis com multiplas operações
 - 120x^3*z^3 + 180x^3*y^2 - 24x^2
 ```
 

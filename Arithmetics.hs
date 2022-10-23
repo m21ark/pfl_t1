@@ -120,11 +120,22 @@ poliParseToStr [] = "0"
 poliParseToStr poli =  if result == "" then "0" else result
     where 
         result = firstElem ++ (auxF $ tail $ strL)
-        strL = map monoParseToStr $ noZeroCoef poli 
+        strL = map monoParseToStr $ sortBy (\(a) (b) ->  monoSortGrau a b) $ noZeroCoef poli 
         firstElem = if (head (head strL)) == '-' then "-" ++ (tail (head strL))  else (head strL)
         auxF [] = ""
         auxF (x:xs) =  (if (head x) /='-' then " + " else " ") ++ x ++ (auxF xs)
 
+-- | orders monomios inside polinomio according to their exponents
+monoSortGrau :: Monomio -- Left side monomjo to be compared
+             -> Monomio -- Right side monomjo to be compared
+             -> Ordering -- Result of the compare
+             monoSortGrau  a b
+        | maximum leftExp < maximum rightExp = GT
+        | maximum leftExp == maximum rightExp = if (sum leftExp < sum rightExp) then GT else LT
+        | otherwise = LT
+        where
+                leftExp = snd $ fst a
+                rightExp = snd $ fst b
 
 -- | Parses monomio to string 
 monoParseToStr::  Monomio -- ^ Monomio to be converted to string
