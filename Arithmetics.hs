@@ -113,6 +113,7 @@ normPoli p =   sumPoli_ . (sortBy monoSort) . noZeroExp . noZeroCoef $ [normalis
 -- | Parses to string a polinomio representation
 poliParseToStr ::  Polinomio -- ^ polinomio
                 -> String     -- ^ representation of a polinomio in string
+poliParseToStr [] = "0"
 poliParseToStr poli =  if result == "" then "0" else result
     where 
         result = firstElem ++ (auxF $ tail $ strL)
@@ -220,7 +221,7 @@ deriver m dx = if monoContainsVar m dx then deriveMono m dx else ((0,[1]),"ç") 
 deriveMono :: Monomio -- ^ Monomio
            -> Char    -- ^ deriving variable
            -> Monomio -- ^ Resulting of deriving the Monomio by the variable char
-deriveMono m dx = if exp_ == -1 then ((0,[]),"") else (((monoCoef m) * exp_, exponents), (monoVar m))
+deriveMono m dx = if exp_ == -1 then ((0,[1]),"ç") else (((monoCoef m) * exp_, exponents), (monoVar m))
     where
         exp_aux = zip (monoVar m) (monoExp m) -- [(var, exp)]
         index_aux = zip (monoVar m) [0..] -- [(var, exp)]
