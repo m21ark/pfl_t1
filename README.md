@@ -209,8 +209,8 @@ A primeira representa operação de potência. A segunda serve para representar 
 > (3x^6)´x                            # Derivada Simples
 18x^5
 
-> (3x^6 + 4y^3 -7x^2z^4)              # Derivada Com Multiplas Varíaveis
-4y^3 - 7x^2*z^4 + 3x^6
+> (3x^6 + 4y^3 -7x^2z^4)´x            # Derivada Com Multiplas Varíaveis
+- 14x*z^4 + 18x^5
 
 > (2y^2 -3z)**2                       # Operação de potência
 9z^2 - 12y^2*z + 4y^4
